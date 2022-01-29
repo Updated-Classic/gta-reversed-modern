@@ -7,6 +7,7 @@
 #include "StdInc.h"
 
 #include "Radar.h"
+#include <extensions/enumerate.hpp>
 
 float& CRadar::m_fRadarOrientation = *(float*)0xBA8310;
 float& CRadar::m_radarRange = *(float*)0xBA8314;
@@ -154,6 +155,7 @@ void CRadar::InjectHooks()
     RH_ScopedInstall(SetShortRangeCoordBlip, 0x583920);
     RH_ScopedInstall(ChangeBlipScale, 0x583CC0);
     RH_ScopedInstall(GetRadarTraceColour, 0x584770);
+    RH_ScopedInstall(SetCoordBlip, 0x583820);
 
     // unused
     RH_ScopedInstall(GetNewUniqueBlipIndex, 0x582820);
@@ -683,13 +685,36 @@ void CRadar::CalculateCachedSinCos()
 }
 
 // 0x583820
-int32 CRadar::SetCoordBlip(eBlipType type, CVector posn, _IGNORED_ uint32 color, eBlipDisplay blipDisplay, _IGNORED_ char* scriptName)
+int32 CRadar::SetCoordBlip(eBlipType type, CVector posn, _IGNORED_ eBlipColour color, eBlipDisplay blipDisplay, _IGNORED_ char* scriptName)
 {
-    return ((int32(__cdecl*)(eBlipType, CVector, uint32, eBlipDisplay, char*))0x583820)(type, posn, color, blipDisplay, scriptName);
+    if (auto idx = FindTraceTrackingBlipIndex(); idx != -1) {
+        auto& t = ms_RadarTrace[idx];
+
+        t.m_vPosition        = posn;
+        t.m_nBlipDisplayFlag = blipDisplay;
+        t.m_nBlipType        = type;
+        t.m_nColour          = color;
+        t.m_fSphereRadius    = 1.f;
+        t.m_nEntityHandle    = 0;
+        t.m_nBlipSize        = 1;
+        t.m_nBlipSprite      = eRadarSprite::RADAR_SPRITE_NONE;
+        t.m_bBright          = true;
+        t.m_bTrackingBlip    = true;
+        t.m_pEntryExit       = nullptr;
+
+        if (t.m_nCounter >= 0xFFFF) {
+            t.m_nCounter = 1;
+            return idx + 0xFFFF + 1;
+        } else {
+            t.m_nCounter++;
+            return idx | (t.m_nCounter << 16);
+        }
+    }
+    return -1;
 }
 
 // 0x583920
-int32 CRadar::SetShortRangeCoordBlip(eBlipType type, CVector posn, uint32 color, eBlipDisplay blipDisplay, char* scriptName)
+int32 CRadar::SetShortRangeCoordBlip(eBlipType type, CVector posn, eBlipColour color, eBlipDisplay blipDisplay, char* scriptName)
 {
     int32 index = SetCoordBlip(type, posn, color, blipDisplay, scriptName);
     if (index == -1)
@@ -1369,4 +1394,13 @@ void CRadar::Load()
 void CRadar::Save()
 {
     ((void(__cdecl*)())0x5D5860)();
+}
+
+int32 CRadar::FindTraceTrackingBlipIndex() {
+    for (auto&& [i, v] : enumerate(ms_RadarTrace)) {
+        if (v.m_bTrackingBlip) {
+            return (int32)i;
+        }
+    }
+    return -1;
 }
