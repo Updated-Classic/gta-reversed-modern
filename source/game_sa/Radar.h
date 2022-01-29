@@ -282,7 +282,7 @@ public:
     static void Load();
     static void Save();
 
-    static int32 FindTraceTrackingBlipIndex(); // NOTSA: Return the index of the first trace with the `TrackingBlip` flag set
+    static int32 FindTraceNotTrackingBlipIndex(); // NOTSA: Return the index of the first trace with the `TrackingBlip` flag NOT set
 };
 
 bool ClipRadarTileCoords(int32& x, int32& y);
