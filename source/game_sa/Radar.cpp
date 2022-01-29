@@ -918,10 +918,11 @@ void CRadar::SetBlipAlwaysDisplayInZoom(int32 blipIndex, uint8 display)
 }
 
 // 0x583E00
-void CRadar::SetBlipFade(int32 blipIndex, uint8 fade)
+void CRadar::SetBlipFade(int32 blipIndex, bool fade)
 {
-    // unused
-    ((void(__cdecl*)(int32, uint8))0x583E00)(blipIndex, fade);
+    if (const auto idx = GetActualBlipArrayIndex(blipIndex); idx != -1) {
+        ms_RadarTrace[idx].m_bBlipFade = fade;
+    }
 }
 
 // 0x583E50
