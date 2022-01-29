@@ -158,6 +158,7 @@ void CRadar::InjectHooks()
     RH_ScopedInstall(SetCoordBlip, 0x583820);
     RH_ScopedInstall(SetEntityBlip, 0x5839A0);
     RH_ScopedInstall(DisplayThisBlip, 0x583B40);
+    RH_ScopedInstall(ChangeBlipBrightness, 0x583C70);
     
     RH_ScopedInstall(GetNewUniqueBlipIndex, 0x582820);
     RH_ScopedInstall(TransformRadarPointToRealWorldSpace, 0x5835A0);
@@ -866,7 +867,9 @@ bool CRadar::DisplayThisBlip(eRadarSprite spriteId, char priority)
 // 0x583C70
 void CRadar::ChangeBlipBrightness(int32 blipIndex, int32 brightness)
 {
-    ((void(__cdecl*)(int32, int32))0x583C70)(blipIndex, brightness);
+    if (const auto idx = GetActualBlipArrayIndex(blipIndex); idx != -1) {
+        ms_RadarTrace[idx].m_bBright = brightness != 1;
+    }
 }
 
 // 0x583CC0
