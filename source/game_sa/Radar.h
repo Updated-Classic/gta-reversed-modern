@@ -14,7 +14,9 @@ Do not delete this comment block. Respect others' work!
 // Thanks to Wesser for radar-related things
 enum eBlipAppearance {
     BLIP_FLAG_FRIEND, // It selects BLIP_COLOUR_BLUE. If unset together with BLIP_FLAG_THREAT, any color.
-    BLIP_FLAG_THREAT  // It selects BLIP_COLOUR_RED. If unset together with BLIP_FLAG_FRIEND, any color.
+    BLIP_FLAG_THREAT,  // It selects BLIP_COLOUR_RED. If unset together with BLIP_FLAG_FRIEND, any color.
+
+    BLIP_FLAG_NUM // Add above this
 };
 
 enum eBlipType {
@@ -162,6 +164,7 @@ struct tRadarTrace {
 
     uint8 m_nBlipDisplayFlag : 2; // see eBlipDisplay
     uint8 m_nBlipType : 4;        // see eBlipType
+    uint8 m_appearance : 2;       // See eBlipAppearance
 };
 
 VALIDATE_SIZE(tRadarTrace, 0x28);
@@ -241,7 +244,7 @@ public:
     static void SetBlipSprite(int32 blipIndex, int32 spriteId);
     static void SetBlipAlwaysDisplayInZoom(int32 blipIndex, uint8 display);
     static void SetBlipFade(int32 blipIndex, bool fade);
-    static void SetCoordBlipAppearance(int32 blipIndex, uint8 appearance);
+    static void SetCoordBlipAppearance(int32 blipIndex, eBlipAppearance appearance);
     static void SetBlipFriendly(int32 blipIndex, bool friendly);
     static void SetBlipEntryExit(int32 blipIndex, CEntryExit* enex);
     static void ShowRadarTrace(float x, float y, uint32 size, uint8 red, uint8 green, uint8 blue, uint8 alpha);
