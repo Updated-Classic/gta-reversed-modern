@@ -127,7 +127,7 @@ void CRadar::InjectHooks()
     RH_ScopedInstall(SetMapCentreToPlayerCoords, 0x585B20);
     RH_ScopedInstall(InitFrontEndMap, 0x585960);
     RH_ScopedInstall(CalculateBlipAlpha, 0x583420);
-    //RH_ScopedInstall(TransformRadarPointToScreenSpace, 0x583480);
+    RH_ScopedInstall(TransformRadarPointToScreenSpace, 0x583480, true);
     RH_ScopedInstall(TransformRealWorldPointToRadarSpace, 0x583530);
     RH_ScopedInstall(CalculateCachedSinCos, 0x583670);
     RH_ScopedInstall(SetBlipSprite, 0x583D70); // OK
@@ -581,9 +581,19 @@ uint8 CRadar::CalculateBlipAlpha(float distance)
 }
 
 // 0x583480
+// NOTE: Unhooked by default for now. Causes `DrawRadarSection` to crash.
 void CRadar::TransformRadarPointToScreenSpace(CVector2D& out, const CVector2D& in)
 {
-    ((void(__cdecl*)(CVector2D&, CVector2D const&))0x583480)(out, in);
+    //if (FrontEndMenuManager.drawRadarOrMap) {
+    //    const CVector2D base{ FrontEndMenuManager.m_fMapBaseX, FrontEndMenuManager.m_fMapBaseX }; // TODO: FrontEndMenuManager::MapBase should be CVector2D IMHO
+    //    out = base + in * FrontEndMenuManager.m_fMapZoom;
+    //} else {
+    //    // TODO: Seemingly magic numbers
+    //    out = {
+    //        94.f * SCREEN_WIDTH_UNIT / 2.f + SCREEN_WIDTH_UNIT * 40.f + 94.f * SCREEN_WIDTH_UNIT * in.x / 2.f,
+    //        SCREEN_HEIGHT - SCREEN_HEIGHT_UNIT * 104.f + 76.f * SCREEN_HEIGHT_UNIT / 2.f - 76.f * SCREEN_HEIGHT_UNIT * in.y / 2.f
+    //    };
+    //}
 }
 
 // 0x583530
