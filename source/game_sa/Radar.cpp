@@ -13,7 +13,6 @@ float& CRadar::m_radarRange = *(float*)0xBA8314;
 uint16* CRadar::MapLegendList = (uint16*)0xBA8318;
 uint16& CRadar::MapLegendCounter = *(uint16*)0xBA86B8;
 CRGBA* CRadar::ArrowBlipColour = (CRGBA*)0xBA86D4;
-tRadarTrace* CRadar::ms_RadarTrace = (tRadarTrace*)0xBA86F0;
 CVector2D& CRadar::vec2DRadarOrigin = *(CVector2D*)0xBAA248;
 CSprite2d* CRadar::RadarBlipSprites = (CSprite2d*)0xBAA250;
 CRect& CRadar::m_radarRect = *(CRect*)0x8D0920; // {1000000.0f, -1000000.0f, -1000000.0f, 1000000.0f}
@@ -32,9 +31,8 @@ airstrip_info airstrip_table[4] = {
 */
 static airstrip_info* airstrip_table = (airstrip_info*)0x8D06E0;
 
-
-// int32 gRadarTextures[MAX_RADAR_WIDTH_TILES][MAX_RADAR_HEIGHT_TILES];
-static int32* gRadarTextures = (int32*)0xBA8478;
+// Array of TXD slot indices for each radar section's texture
+static int32(&gRadarTextures)[CRadar::MAX_RADAR_WIDTH_TILES][CRadar::MAX_RADAR_HEIGHT_TILES] = *(int32(*)[CRadar::MAX_RADAR_WIDTH_TILES][CRadar::MAX_RADAR_HEIGHT_TILES])0xBA8478;
 
 // name, maskName
 // 0x8d0720
@@ -121,6 +119,7 @@ void CRadar::InjectHooks()
     RH_ScopedClass(CRadar);
     RH_ScopedCategoryGlobal();
 
+    RH_ScopedInstall(Initialise, 0x587FB0);
     RH_ScopedInstall(LoadTextures, 0x5827D0);
     RH_ScopedInstall(DrawLegend, 0x5828A0);
     RH_ScopedInstall(LimitRadarPoint, 0x5832F0);
@@ -167,39 +166,36 @@ void CRadar::InjectHooks()
 // 0x587FB0
 void CRadar::Initialise()
 {
-    ((void(__cdecl*)())0x587FB0)();
-    /*
     airstrip_blip = 0;
     airstrip_location = 0;
 
-    for (int32 i = 0; i < 250; i++) {
-        auto trace& = ms_RadarTrace[i];
-
-        trace.m_fSphereRadius = 1.0f;
-        trace.m_nBlipSize = 0;
-        trace.m_pEntryExit = nullptr;
-        trace.m_nCounter = 1;
-
-        trace.m_bBright = true;
-        trace.m_bTrackingBlip = false;
-        trace.m_bShortRange = false;
-        trace.m_bFriendly = false;
-        trace.m_bBlipRemain = false;
-        trace.m_bBlipFade = false;
-        trace.m_nCoordBlipAppearance = BLIP_FLAG_FRIEND;
-        trace.m_nBlipDisplayFlag = BLIP_DISPLAY_NEITHER;
-        trace.m_nBlipType = BLIP_NONE;
+    for (auto& trace : ms_RadarTrace) {
+        trace = {
+            .m_nCounter = 1,
+            .m_fSphereRadius = 1.0f,
+            .m_nBlipSize = 0,
+            .m_pEntryExit = nullptr,
+            .m_bBright = true,
+            .m_bTrackingBlip = false,
+            .m_bShortRange = false,
+            .m_bFriendly = false,
+            .m_bBlipRemain = false,
+            .m_bBlipFade = false,
+            .m_nCoordBlipAppearance = BLIP_FLAG_FRIEND,
+            .m_nBlipDisplayFlag = BLIP_DISPLAY_NEITHER,
+            .m_nBlipType = BLIP_NONE,
+        };
     }
 
     m_radarRange = 350.0f;
 
-    char txdName[10];
-
-    for (int32 i = 0; i < 144; i++) {
-        sprintf(txdName, "radar%02d", i);
-        gRadarTextures[i] = CTxdStore::FindTxdSlot(txdName);
+    char txdName[64];
+    for (auto y = 0u; y < MAX_RADAR_HEIGHT_TILES; y++) {
+        for (auto x = 0u; x < MAX_RADAR_WIDTH_TILES; x++) {
+            sprintf_s(txdName, "radar%02d", y * MAX_RADAR_WIDTH_TILES + x);
+            gRadarTextures[y][x] = CTxdStore::FindTxdSlot(txdName);
+        }
     }
-    */
 }
 
 // 0x585940
@@ -935,7 +931,7 @@ void CRadar::RequestMapSection(int32 x, int32 y)
     if (x < 0 || x > 11 || y < 0 || y > 11)
         return;
 
-    int32 tex = gRadarTextures[x + 12 * y];
+    int32 tex = gRadarTextures[y][x];
     if (tex == -1)
         return;
 
@@ -945,10 +941,10 @@ void CRadar::RequestMapSection(int32 x, int32 y)
 // 0x584BB0
 void CRadar::RemoveMapSection(int32 x, int32 y)
 {
-    if (x < 0 || x > 11 || y < 0 || y > 11)
+    if (x < 0 || x > MAX_RADAR_WIDTH_TILES || y < 0 || y > MAX_RADAR_HEIGHT_TILES)
         return;
 
-    int32 tex = gRadarTextures[x + 12 * y];
+    int32 tex = gRadarTextures[y][x];
     if (tex == -1)
         return;
 
@@ -958,8 +954,10 @@ void CRadar::RemoveMapSection(int32 x, int32 y)
 // 0x584BF0
 void CRadar::RemoveRadarSections()
 {
-    for (int32 i = 0; i < 12; i++) {
-        CStreaming::RemoveTxdModel(gRadarTextures[i]);
+    for (auto y = 0u; y < MAX_RADAR_HEIGHT_TILES; y++) {
+        for (auto x = 0u; x < MAX_RADAR_WIDTH_TILES; x++) {
+            CStreaming::RemoveTxdModel(gRadarTextures[y][x]);
+        }
     }
 }
 

@@ -151,6 +151,7 @@ struct tRadarTrace {
     uint16       m_nBlipSize;
     CEntryExit*  m_pEntryExit;
     eRadarSprite m_nBlipSprite;
+
     uint8        m_bBright : 1;              // It makes use of bright colors. Always set.
     uint8        m_bTrackingBlip : 1;        // It is available.
     uint8        m_bShortRange : 1;          // It doesn't show permanently on the radar.
@@ -193,7 +194,8 @@ public:
     // static CRGBA ArrowBlipColours[6];
     static CRGBA* ArrowBlipColour;
     // static tRadarTrace ms_RadarTrace[175];
-    static tRadarTrace* ms_RadarTrace;
+    static inline tRadarTrace(&ms_RadarTrace)[MAX_RADAR_TRACES] = *(tRadarTrace(*)[MAX_RADAR_TRACES])0xBA86F0;
+
     // static CVector2D vec2DRadarOrigin;
     static CVector2D& vec2DRadarOrigin;
     // static CSprite2d RadarBlipSprites[64];
