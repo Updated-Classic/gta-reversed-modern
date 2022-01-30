@@ -1367,7 +1367,7 @@ void CRadar::SetRadarMarkerState(int32 arg0, uint8 arg1)
 }
 
 // 0x585FF0
-void CRadar::DrawRadarSprite(uint16 spriteId, float x, float y, uint8 alpha)
+void CRadar::DrawRadarSprite(eRadarSprite spriteId, float x, float y, uint8 alpha)
 {
     if (FrontEndMenuManager.drawRadarOrMap) {
         x *= SCREEN_WIDTH_UNIT;
@@ -1379,19 +1379,13 @@ void CRadar::DrawRadarSprite(uint16 spriteId, float x, float y, uint8 alpha)
     float width = std::floor(SCREEN_WIDTH_UNIT * 8.f);   // uint32 width  = 8 * SCREEN_WIDTH_UNIT;  original math with warnings, NOTSA
     float height = std::floor(SCREEN_HEIGHT_UNIT * 8.f); // uint32 height = 8 * SCREEN_HEIGHT_UNIT;
 
-    auto sprite16 = (uint16)spriteId;
-    if (!DisplayThisBlip(sprite16, -99))
-        return;
-
-    CRect rt{
-        x - width,
-        y - height,
-        x + width,
-        y + height,
-    };
-    CRGBA white(255, 255, 255, alpha);
-    RadarBlipSprites[sprite16].Draw(rt, white);
-    AddBlipToLegendList(0, sprite16);
+    if (DisplayThisBlip(spriteId, -99)) {
+        RadarBlipSprites[(size_t)spriteId].Draw(
+            { x - width, y - height, x + width, y + height },
+            { 255, 255, 255, alpha }
+        );
+        AddBlipToLegendList(0, spriteId);
+    }
 }
 
 // 0x586110

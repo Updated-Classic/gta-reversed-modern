@@ -15,6 +15,7 @@ Do not delete this comment block. Respect others' work!
 enum eBlipAppearance {
     BLIP_FLAG_FRIEND, // It selects BLIP_COLOUR_BLUE. If unset together with BLIP_FLAG_THREAT, any color.
     BLIP_FLAG_THREAT,  // It selects BLIP_COLOUR_RED. If unset together with BLIP_FLAG_FRIEND, any color.
+    BLIP_FLAH_UNK,
 
     BLIP_FLAG_NUM // Add above this
 };
