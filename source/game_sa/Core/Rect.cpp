@@ -77,6 +77,11 @@ inline bool CRect::IsPointInside(CVector2D const& point, float tolerance) const
         && top - tolerance <= point.y && bottom + tolerance >= point.y;
 }
 
+bool CRect::IsRectInside(const CRect& rect) const {
+    return rect.left <= right && rect.right >= left
+        && rect.top <= bottom && rect.bottom >= top;
+}
+
 inline void CRect::SetFromCenter(float x, float y, float size)
 {
     left = x - size;

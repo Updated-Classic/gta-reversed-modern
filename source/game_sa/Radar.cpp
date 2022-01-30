@@ -8,6 +8,7 @@
 
 #include "Radar.h"
 #include <extensions/enumerate.hpp>
+namespace rng = std::ranges;
 
 float& CRadar::m_fRadarOrientation = *(float*)0xBA8310;
 float& CRadar::m_radarRange = *(float*)0xBA8314;
@@ -1108,6 +1109,38 @@ int32 CRadar::ClipRadarPoly(CVector2D* out, const CVector2D* in)
 // 0x5853D0
 void CRadar::DrawAreaOnRadar(const CRect& rect, const CRGBA&  color, bool inMenu)
 {
+    //if (!m_radarRect.IsRectInside(rect)) {
+    //    return;
+    //}
+
+    //// Corner positions - Not transformed
+    //const CVector2D rectCorners[]{
+    //    {rect.right, rect.top},     // Top right
+    //    {rect.right, rect.bottom},  // Bottom right
+
+    //    {rect.left,  rect.bottom},  // Bottom left
+    //    {rect.left,  rect.top}      // Top left
+    //};
+
+    //// Corner positions - Transformed, not yet clipped
+    //CVector2D polyUnclippedVertices[4];
+    //rng::transform(rectCorners, polyUnclippedVertices, [](auto&& v) {
+    //    CVector2D transformed;
+    //    TransformRealWorldPointToRadarSpace(transformed, v);
+    //    return transformed;
+    //});
+
+    //// Now clip all corners to be within the radar area
+    //CVector2D polyVertices[4];
+    //const auto nVerticesInsideRadar = ClipRadarPoly(polyVertices, polyUnclippedVertices);
+
+    //RwTexCoords texCoords[4];
+    //if (nVerticesInsideRadar) {
+    //    for (auto i = 0; i < nVerticesInsideRadar; i++) {
+
+    //    }
+    //}
+
     ((void(__cdecl*)(CRect const&, CRGBA const&, bool))0x5853D0)(rect, color, inMenu);
 }
 
