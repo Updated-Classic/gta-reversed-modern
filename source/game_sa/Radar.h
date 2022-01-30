@@ -292,6 +292,8 @@ public:
     static void Load();
     static void Save();
 
+    static auto GetBlipName(eRadarSprite sprite);
+
     static int32 FindTraceNotTrackingBlipIndex(); // NOTSA: Return the index of the first trace with the `TrackingBlip` flag NOT set
 };
 
