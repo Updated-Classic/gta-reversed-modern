@@ -268,7 +268,7 @@ public:
     static void SetMapCentreToPlayerCoords();
     static void Draw3dMarkers();
     static void SetRadarMarkerState(int32 arg0, uint8 arg1);
-    static void DrawRadarSprite(uint16 spriteId, float x, float y, uint8 alpha);
+    static void DrawRadarSprite(eRadarSprite spriteId, float x, float y, uint8 alpha);
     static void DrawRadarSection(int32 x, int32 y);
     static void DrawRadarSectionMap(int32 x, int32 y, CRect rect);
     static void DrawRadarGangOverlay(bool inMenu);
