@@ -169,9 +169,9 @@ struct tRadarTrace {
     uint8 m_appearance : 2;       // See eBlipAppearance
 
     auto HasSprite() const { return m_nBlipSprite != eRadarSprite::RADAR_SPRITE_NONE; }
-    auto GetStaticColour() const; // Color with the alpha set to 0xFF
-    auto GetWorldPos() const;
-    auto GetRadarAndScreenPos(float* radarPointDist) const;
+    uint32 GetStaticColour() const; // Color with the alpha set to 0xFF
+    CVector GetWorldPos() const;
+    std::pair<CVector2D, CVector2D> GetRadarAndScreenPos(float* radarPointDist) const;
 };
 
 VALIDATE_SIZE(tRadarTrace, 0x28);
@@ -292,7 +292,7 @@ public:
     static void Load();
     static void Save();
 
-    static auto GetBlipName(eRadarSprite sprite);
+    static const char* GetBlipName(eRadarSprite sprite);
 
     static int32 FindTraceNotTrackingBlipIndex(); // NOTSA: Return the index of the first trace with the `TrackingBlip` flag NOT set
 };
