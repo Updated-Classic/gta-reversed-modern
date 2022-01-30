@@ -168,6 +168,7 @@ void CRadar::InjectHooks()
 
     RH_ScopedGlobalInstall(IsPointInsideRadar, 0x584D40);
     RH_ScopedGlobalInstall(GetTextureCorners, 0x584D90);
+    RH_ScopedGlobalInstall(ClipRadarTileCoords, 0x584B00);    
 }
 
 // 0x587FB0
@@ -1093,7 +1094,10 @@ void CRadar::ShowRadarTraceWithHeight(float x, float y, uint32 size, uint8 red, 
 // 0x584480
 void CRadar::ShowRadarMarker(CVector posn, uint32 color, float radius)
 {
-    ((void(__cdecl*)(CVector, uint32, float))0x584480)(posn, color, radius);
+    //CTheScripts::ScriptDebugLine3D();
+    //CTheScripts::ScriptDebugLine3D();
+    //CTheScripts::ScriptDebugLine3D();
+    //CTheScripts::ScriptDebugLine3D();
 }
 
 // 0x584770
@@ -1186,9 +1190,17 @@ void CRadar::SetupRadarRect(int32 x, int32 y)
 
 // unused
 // 0x584B00
+// Returns true if either coords had to be clipped 
 bool ClipRadarTileCoords(int32& x, int32& y)
 {
-    return ((bool(__cdecl*)(int32&, int32&))0x584B00)(x, y);
+    // Not quite the way they've done it, but nicer.
+
+    const auto ox = x, oy = y;
+
+    x = std::clamp(x, 0, (int32)CRadar::MAX_RADAR_WIDTH_TILES - 1);
+    y = std::clamp(y, 0, (int32)CRadar::MAX_RADAR_HEIGHT_TILES - 1);
+
+    return ox != x || oy != y;
 }
 
 // 0x584B50
