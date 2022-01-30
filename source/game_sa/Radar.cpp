@@ -1467,6 +1467,7 @@ void CRadar::DrawRadarMap()
 }
 
 // 0x586B00
+// TODO: Fix me - Zoom incorrect
 void CRadar::DrawMap()
 {
     CPlayerPed* player = FindPlayerPed(-1);
@@ -1482,7 +1483,6 @@ void CRadar::DrawMap()
         else
             m_radarRange = RADAR_MIN_RANGE;
     } else {
-
         if (vehicle && vehicle->IsSubPlane() && ModelIndices::IsVortex(vehicle->m_nModelIndex)) {
             float speedZ = vehicle->GetPosition().z * 1.0f / 200.0f;
 
