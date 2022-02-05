@@ -16,24 +16,23 @@ class CColCacheEntry;
 
 class CCollision {
 public:
-    static CLinkList<CCollisionData*> &ms_colModelCache;
-    static int32& ms_iProcessLineNumCrossings;
-    static uint32& ms_collisionInMemory;
-
+    static inline CLinkList<CCollisionData*> &ms_colModelCache = *(CLinkList<CCollisionData*>*)0x96592C;
+    static inline uint32& ms_iProcessLineNumCrossings = *(uint32*)0x9655D0;
+    static inline uint32& ms_collisionInMemory = *(uint32*)0x9655D4;
 public:
     static void InjectHooks();
     static void Tests();
 
+    // dummy function
     static void Init();
-    static void Shutdown();
     static void Update();
     static void SortOutCollisionAfterLoad();
-    static bool TestSphereSphere(const CColSphere& sphere1, const CColSphere& sphere2);
-    static bool TestSphereBox(const CSphere& sphere, const CBox& box);
-    static bool ProcessSphereBox(const CColSphere& sphere, const CColBox& box, CColPoint& colPoint, float& maxTouchDistance);
-    static bool PointInTriangle(const CVector& point, const CVector* triPoints);
-    static float DistToLineSqr(const CVector* lineStart, const CVector* lineEnd, const CVector* point);
-    static float DistToMathematicalLine(const CVector* lineStart, const CVector* lineEnd, const CVector* point);
+    static bool TestSphereSphere(CColSphere const& sphere1, CColSphere const& sphere2);
+    static bool TestSphereBox(CSphere const& sphere, CBox const& box);
+    static bool ProcessSphereBox(CColSphere const & sph, CColBox const& box, CColPoint & point, float & mindistsq);
+    static bool __stdcall PointInTriangle(CVector const& point, CVector const* triPoints);
+    static float DistToLineSqr(CVector const& lineStart, CVector const& lineEnd, CVector const& point);
+    static float DistToMathematicalLine(CVector const* lineStart, CVector const* lineEnd, CVector const* point);
     static float DistToMathematicalLine2D(float lineStartX, float lineStartY, float lineEndX, float lineEndY, float pointX, float pointY);
     static float DistAlongLine2D(float lineX, float lineY, float lineDirX, float lineDirY, float pointX, float pointY);
     static bool ProcessLineSphere(const CColLine& line, const CColSphere& sphere, CColPoint& colPoint, float& depth);

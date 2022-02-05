@@ -19,6 +19,11 @@ public:
 public:
     CColBox() = default;
     
+    CColBox(const CVector& min, const CVector& max) :
+        CBox(min, max)
+    {
+    }
+
     CColBox(const CBox& box) :
         CBox(box)
     {

@@ -25,8 +25,8 @@ public:
             uint8 m_bFlag0x80 : 1;
         };
     };
-    uint8 m_nLighting;
-    uint8 m_nLight;
+    uint8 m_nLighting{};
+    uint8 m_nLight{};
 
 public:
     static void InjectHooks();

@@ -10,10 +10,11 @@
 
 class CSphere {
 public:
-    CVector m_vecCenter;
-    float   m_fRadius;
+    CVector m_vecCenter{};
+    float   m_fRadius{};
 
-    CSphere() {};
+    CSphere() = default;
+
     CSphere(CVector center, float radius) : m_vecCenter(center), m_fRadius(radius) {};
     CSphere(float radius, CVector center) : m_vecCenter(center), m_fRadius(radius) {};
 
