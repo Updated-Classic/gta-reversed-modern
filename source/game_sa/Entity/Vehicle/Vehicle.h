@@ -691,6 +691,7 @@ public:
     // otherwise in model-space
     CVector GetDummyPosition(eVehicleDummies dummy, bool bWorldSpace = true);
     int32 GetRopeIndex();
+    bool IsAnyOfPassengersFollowerOfGroup(CPedGroup& group);
 };
 VALIDATE_SIZE(CVehicle, 0x5A0);
 

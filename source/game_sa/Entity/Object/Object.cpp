@@ -13,6 +13,7 @@
 #include "ObjectSaveStructure.h"
 #include "Rope.h"
 #include "Ropes.h"
+#include "Garages.h"
 
 uint16& CObject::nNoTempObjects = *(uint16*)(0xBB4A70);
 float& CObject::fDistToNearestTree = *(float*)0x8D0A20;
@@ -697,8 +698,7 @@ void CObject::ProcessGarageDoorBehaviour() {
         return;
 
     auto& vecDummyPos = m_pDummyObject->GetPosition();
-    auto* mi = CModelInfo::GetModelInfo(m_nModelIndex);
-    const auto fHeight = mi->GetColModel()->GetBoundingBox().GetHeight();
+    auto fHeight = CGarages::FindDoorHeightForMI(m_nModelIndex);
     auto& garage = CGarages::GetGarage(m_nGarageDoorGarageIndex);
     if (garage.m_bDoorOpensUp)
     {
