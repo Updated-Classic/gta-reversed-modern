@@ -186,7 +186,7 @@ bool StartMission(int32 missionId, bool bDoMissionCleanUp = true) {
     FindPlayerPed()->m_nAreaCode = AREA_CODE_NORMAL_WORLD;
     if (!CGame::currArea) {
         player->m_pEnex = nullptr;
-        CEntryExitManager::ms_entryExitStackPosn = 0;
+        CEntryExitManager::ms_entryExitStackNum = 0;
         CTimeCycle::StopExtraColour(false);
     }
 

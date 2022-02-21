@@ -59,6 +59,23 @@ void CEntryExit::FindValidTeleportPoint(CVector* point) {
     plugin::CallMethod<0x43EAF0, CEntryExit*>(this);
 }
 
+const CRect& CEntryExit::GetEnteranceRect() const {
+    return m_recEntrance;
+}
+
+// Return center of enterance rect
+CVector CEntryExit::GetPosition() const {
+    return CVector{ GetEnteranceRect().GetCenter(), m_fEntranceZ };
+}
+
+CVector2D CEntryExit::GetPosition2D() const {
+    return CVector2D{ GetEnteranceRect().GetCenter() };
+}
+
+uint8 CEntryExit::GetMyOrLinkedArea() const {
+    return m_pLink ? m_pLink->m_nArea : m_nArea;
+}
+
 // 0x43E460
 bool CEntryExit::IsInArea(const CVector& position) {
     return plugin::CallMethodAndReturn<bool, 0x43E460, CEntryExit*, const CVector&>(this, position);
