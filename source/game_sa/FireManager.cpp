@@ -1,6 +1,7 @@
 #include "StdInc.h"
 
 #include "FireManager.h"
+#include "TheScripts.h"
 
 CFireManager& gFireManager = *reinterpret_cast<CFireManager*>(0xB71F80);
 
@@ -87,7 +88,7 @@ uint32 CFireManager::GetNumOfFires() {
 }
 
 // 0x538F40
-CFire* CFireManager::FindNearestFire(CVector const& point, bool bCheckIsBeingExtinguished, bool bCheckWasCreatedByScript) {
+CFire* CFireManager::FindNearestFire(const CVector& point, bool bCheckIsBeingExtinguished, bool bCheckWasCreatedByScript) {
     float fNearestDist2DSq = std::numeric_limits<float>::max(); // Izzotop :thinking
     CFire* nearestFire{};
     for (CFire& fire : m_aFires) {
@@ -282,8 +283,8 @@ CFire* CFireManager::StartFire(CVector pos, float size, uint8 unused, CEntity* c
 CFire* CFireManager::StartFire(CEntity* target, CEntity* creator, float size, uint8 unused, uint32 lifetime, int8 numGenerations) {
     /* Do few checks, and clear `m_pFire` if `target` */
     switch (target->m_nType) {
-    case eEntityType::ENTITY_TYPE_PED: {
-        auto pedTarget = static_cast<CPed*>(target);
+    case ENTITY_TYPE_PED: {
+        auto pedTarget = target->AsPed();
         if (!pedTarget->IsPedInControl())
             return nullptr;
         if (pedTarget->m_pFire)
@@ -292,13 +293,13 @@ CFire* CFireManager::StartFire(CEntity* target, CEntity* creator, float size, ui
             return nullptr;
         break;
     }
-    case eEntityType::ENTITY_TYPE_VEHICLE: {
-        auto vehTarget = static_cast<CVehicle*>(target);
+    case ENTITY_TYPE_VEHICLE: {
+        auto vehTarget = target->AsVehicle();
         if (vehTarget->m_pFire)
             return nullptr;
 
         if (vehTarget->IsAutomobile()) {
-            if (static_cast<CAutomobile*>(target)->m_damageManager.GetEngineStatus() >= 225)
+            if (target->AsAutomobile()->m_damageManager.GetEngineStatus() >= 225)
                 return nullptr;
         }
 
@@ -306,8 +307,8 @@ CFire* CFireManager::StartFire(CEntity* target, CEntity* creator, float size, ui
             return nullptr;
         break;
     }
-    case eEntityType::ENTITY_TYPE_OBJECT: {
-        if (static_cast<CObject*>(target)->m_pFire)
+    case ENTITY_TYPE_OBJECT: {
+        if (target->AsObject()->m_pFire)
             return nullptr;
         break;
     }
@@ -328,20 +329,20 @@ int32 CFireManager::StartScriptFire(const CVector& pos, CEntity* target, float _
             fire->createdByScript = false;
         };
         switch (target->m_nType) {
-        case eEntityType::ENTITY_TYPE_PED: {
-            auto pedTarget = static_cast<CPed*>(target);
+        case ENTITY_TYPE_PED: {
+            auto pedTarget = target->AsPed();
             if (pedTarget->m_pFire)
                 StopFire(pedTarget->m_pFire);
             break;
         }
-        case eEntityType::ENTITY_TYPE_VEHICLE: {
-            auto vehTarget = static_cast<CVehicle*>(target);
+        case ENTITY_TYPE_VEHICLE: {
+            auto vehTarget = target->AsVehicle();
             if (vehTarget->m_pFire)
                 StopFire(vehTarget->m_pFire);
 
             /* Set engine status for automobiles */
             if (vehTarget->IsAutomobile()) {
-                auto& dmgMgr = static_cast<CAutomobile*>(vehTarget)->m_damageManager;
+                auto& dmgMgr = vehTarget->AsAutomobile()->m_damageManager;
                 if (dmgMgr.GetEngineStatus() >= 225)
                     dmgMgr.SetEngineStatus(215);
             }
@@ -352,7 +353,7 @@ int32 CFireManager::StartScriptFire(const CVector& pos, CEntity* target, float _
 
     if (auto fire = GetNextFreeFire(true)) {
         fire->Start(pos, (float)nStrength, target, std::min<uint8>((uint8)m_nMaxFireGenerationsAllowed, nGenerations));
-        return CTheScripts::GetNewUniqueScriptThingIndex(GetIndexOf(fire), 5);
+        return CTheScripts::GetNewUniqueScriptThingIndex(GetIndexOf(fire), SCRIPT_THING_FIRE);
     }
     return -1;
 }

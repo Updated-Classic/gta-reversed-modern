@@ -1,5 +1,7 @@
 #include "StdInc.h"
 
+#include "AccidentManager.h"
+
 CAccidentManager*& CAccidentManager::gAccidentManager = *(CAccidentManager * *)0xB9B7D0;
 
 void CAccidentManager::InjectHooks()
@@ -43,7 +45,7 @@ void CAccidentManager::ReportAccident(CPed* ped)
             m_Accidents[slotIndex].m_pPed = ped;
             m_Accidents[slotIndex].m_bIsTreated = false;
             m_Accidents[slotIndex].m_bIsRevived = false;
-            ped->RegisterReference(reinterpret_cast<CEntity * *>(&m_Accidents[slotIndex].m_pPed));
+            ped->RegisterReference(reinterpret_cast<CEntity**>(&m_Accidents[slotIndex].m_pPed));
         }
     }
 }

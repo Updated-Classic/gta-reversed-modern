@@ -10,8 +10,8 @@ void CEventAttractor::InjectHooks()
     RH_ScopedCategory("Events");
 
     RH_ScopedInstall(Constructor, 0x4AF350);
-    RH_ScopedInstall(AffectsPed_Reversed, 0x4AF4B0);
-    RH_ScopedInstall(CloneEditable_Reversed, 0x4B7440);
+    RH_ScopedVirtualInstall(AffectsPed, 0x4AF4B0);
+    RH_ScopedVirtualInstall(CloneEditable, 0x4B7440);
     RH_ScopedInstall(IsEffectActive, 0x4AF460);
 }
 
@@ -26,16 +26,14 @@ void CEventScriptedAttractor::InjectHooks()
 CEventAttractor::CEventAttractor(C2dEffect* effect, CEntity* entity, bool bAvoidLookingAtAttractor)
 {
     m_2dEffect = effect;
-    m_entity = entity;
+    m_entity   = entity;
     m_bAvoidLookingAtAttractor = bAvoidLookingAtAttractor;
-    if (m_entity)
-        m_entity->RegisterReference(&m_entity);
+    CEntity::SafeRegisterRef(m_entity);
 }
 
 CEventAttractor::~CEventAttractor()
 {
-    if (m_entity)
-        m_entity->CleanUpOldReference(&m_entity);
+    CEntity::SafeCleanUpRef(m_entity);
 }
 
 // 0x4AF350
@@ -67,7 +65,7 @@ bool CEventAttractor::AffectsPed_Reversed(CPed* ped)
         tEffectPedAttractor& pedAttractor = m_2dEffect->pedAttractor;
         if (ped->m_nPedType != PED_TYPE_COP
             || GetEventType() != EVENT_ATTRACTOR
-            || !FindPlayerWanted(-1)->m_nWantedLevel
+            || !FindPlayerWanted()->m_nWantedLevel
             && pedAttractor.m_nAttractorType == PED_ATTRACTOR_TRIGGER_SCRIPT
             && CPopulation::PedMICanBeCreatedAtThisAttractor(ped->m_nModelIndex, pedAttractor.m_szScriptName))
         {
@@ -101,7 +99,7 @@ CEventEditableResponse* CEventAttractor::CloneEditable_Reversed()
 }
 
 // 0x4AF460
-bool CEventAttractor::IsEffectActive(CEntity* entity, C2dEffect const* effect)
+bool CEventAttractor::IsEffectActive(CEntity* entity, const C2dEffect* effect)
 {
     auto modelInfo = CModelInfo::GetModelInfo(entity->m_nModelIndex);
     for (int32 i = 0; i < modelInfo->m_n2dfxCount; i++) {

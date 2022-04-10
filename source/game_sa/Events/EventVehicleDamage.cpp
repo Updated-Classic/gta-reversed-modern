@@ -10,10 +10,10 @@ void CEventVehicleDamage::InjectHooks()
     RH_ScopedCategory("Events");
 
     RH_ScopedInstall(Constructor, 0x4B18D0);
-    RH_ScopedInstall(AffectsPed_Reversed, 0x4B1A00);
-    RH_ScopedInstall(IsCriminalEvent_Reversed, 0x4B1A90);
-    RH_ScopedInstall(ReportCriminalEvent_Reversed, 0x4B50B0);
-    RH_ScopedInstall(GetSourceEntity_Reversed, 0x4B1A70);
+    RH_ScopedVirtualInstall(AffectsPed, 0x4B1A00);
+    RH_ScopedVirtualInstall(IsCriminalEvent, 0x4B1A90);
+    RH_ScopedVirtualInstall(ReportCriminalEvent, 0x4B50B0);
+    RH_ScopedVirtualInstall(GetSourceEntity, 0x4B1A70);
 }
 
 // 0x4B18D0
@@ -22,18 +22,14 @@ CEventVehicleDamage::CEventVehicleDamage(CVehicle* vehicle, CEntity* attacker, e
     m_attacker = attacker;
     m_vehicle = vehicle;
     m_weaponType = weaponType;
-    if (m_vehicle)
-        m_vehicle->RegisterReference(reinterpret_cast<CEntity**>(&m_vehicle));
-    if (m_attacker)
-        m_attacker->RegisterReference(&m_attacker);
+    CEntity::SafeRegisterRef(m_vehicle);
+    CEntity::SafeRegisterRef(m_attacker);
 }
 
 CEventVehicleDamage::~CEventVehicleDamage()
 {
-    if (m_vehicle)
-        m_vehicle->CleanUpOldReference(reinterpret_cast<CEntity**>(&m_vehicle));
-    if (m_attacker)
-        m_attacker->CleanUpOldReference(&m_attacker);
+    CEntity::SafeCleanUpRef(m_vehicle);
+    CEntity::SafeCleanUpRef(m_attacker);
 }
 
 CEventVehicleDamage* CEventVehicleDamage::Constructor(CVehicle* vehicle, CEntity* attacker, eWeaponType weaponType)
@@ -78,14 +74,11 @@ bool CEventVehicleDamage::AffectsPed_Reversed(CPed* ped)
 bool CEventVehicleDamage::IsCriminalEvent_Reversed()
 {
     if (m_attacker) {
-        CPed* ped = static_cast<CPed*>(m_attacker);
-        CVehicle* vehicle = static_cast<CVehicle*>(m_attacker);
-        switch (m_attacker->m_nType)
-        {
+        switch (m_attacker->m_nType) {
         case ENTITY_TYPE_PED:
-            return ped->IsPlayer();
+            return m_attacker->AsPed()->IsPlayer();
         case ENTITY_TYPE_VEHICLE:
-            return vehicle->m_pDriver == FindPlayerPed(-1);
+            return m_attacker->AsVehicle()->m_pDriver == FindPlayerPed();
         }
     }
     return false;
@@ -96,14 +89,14 @@ void CEventVehicleDamage::ReportCriminalEvent_Reversed(CPed* ped)
     if (IsCriminalEvent() && m_attacker) {
         bool bPoliceDontReallyCare = CPedType::PoliceDontCareAboutCrimesAgainstPedType(ped->m_nPedType);
         if (ped->m_nPedType == PED_TYPE_COP) 
-            FindPlayerWanted(-1)->RegisterCrime(eCrimeType::CRIME_VEHICLE_DAMAGE, m_attacker->GetPosition(), ped, bPoliceDontReallyCare);
+            FindPlayerWanted()->RegisterCrime(eCrimeType::CRIME_VEHICLE_DAMAGE, m_attacker->GetPosition(), ped, bPoliceDontReallyCare);
     }
 }
 
 CEntity* CEventVehicleDamage::GetSourceEntity_Reversed() const
 {
-    if (m_attacker && m_attacker->m_nType == ENTITY_TYPE_VEHICLE) {
-        CVehicle* vehicle = static_cast<CVehicle*>(m_attacker);
+    if (m_attacker && m_attacker->IsVehicle()) {
+        CVehicle* vehicle = m_attacker->AsVehicle();
         if (vehicle->m_pDriver)
             return vehicle->m_pDriver;
     }

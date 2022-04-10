@@ -1,5 +1,7 @@
 #include "StdInc.h"
 
+#include "Building.h"
+
 int32& gBuildings = *(int32*)0xB71804;
 
 void CBuilding::InjectHooks()
@@ -13,33 +15,33 @@ void CBuilding::InjectHooks()
 
 CBuilding::CBuilding() : CEntity()
 {
-    m_nType = eEntityType::ENTITY_TYPE_BUILDING;
+    m_nType = ENTITY_TYPE_BUILDING;
     m_bUsesCollision = true;
 }
 
 void* CBuilding::operator new(unsigned size)
 {
-    return CPools::ms_pBuildingPool->New();
+    return GetBuildingPool()->New();
 }
 
 void CBuilding::operator delete(void* data)
 {
-    CPools::ms_pBuildingPool->Delete(static_cast<CBuilding*>(data));
+    GetBuildingPool()->Delete(static_cast<CBuilding*>(data));
 }
 
 void CBuilding::ReplaceWithNewModel(int32 newModelIndex)
 {
-    this->DeleteRwObject();
+    DeleteRwObject();
     if (!CModelInfo::GetModelInfo(m_nModelIndex)->m_nRefCount)
         CStreaming::RemoveModel(m_nModelIndex);
 
     m_nModelIndex = newModelIndex;
 }
 
-bool IsBuildingPointerValid(CBuilding* pBuilding)
+bool IsBuildingPointerValid(CBuilding* building)
 {
-    if (!pBuilding)
+    if (!building)
         return false;
 
-    return CPools::ms_pBuildingPool->IsObjectValid(pBuilding);
+    return GetBuildingPool()->IsObjectValid(building);
 }

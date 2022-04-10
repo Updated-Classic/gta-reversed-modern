@@ -1,5 +1,7 @@
 #include "StdInc.h"
 
+#include "ColModel.h"
+
 void CColModel::InjectHooks()
 {
     RH_ScopedClass(CColModel);
@@ -19,9 +21,9 @@ CColModel::CColModel() : m_boundBox()
 {
     m_nColSlot = 0;
     m_pColData = nullptr;
-    m_bNotEmpty = false;
+    m_bNotEmpty             = false;
     m_bIsSingleColDataAlloc = false;
-    m_bIsActive = true;
+    m_bIsActive             = true;
 }
 
 CColModel::~CColModel()
@@ -29,10 +31,10 @@ CColModel::~CColModel()
     if (!m_bIsActive)
         return;
 
-    CColModel::RemoveCollisionVolumes();
+    RemoveCollisionVolumes();
 }
 
-CColModel& CColModel::operator=(CColModel const& colModel)
+CColModel& CColModel::operator=(const CColModel& colModel)
 {
     //BUG(Prone) No self assignment check
     m_boundSphere.m_vecCenter = colModel.m_boundSphere.m_vecCenter;
@@ -88,7 +90,7 @@ void CColModel::AllocateData(int32 numSpheres, int32 numBoxes, int32 numLines, i
     const auto trianglesOffset = reinterpret_cast<uint32>(pAlignedAddress);
     assert(trianglesOffset && trianglesOffset >= (vertsOffset + vertsSize)); // Just to make sure that the alignment works properly
 
-    CColModel::AllocateData(trianglesOffset + trianglesSize);
+    AllocateData(trianglesOffset + trianglesSize);
     m_pColData->m_nNumSpheres = numSpheres;
     m_pColData->m_nNumLines = numLines;
     m_pColData->m_nNumBoxes = numBoxes;
@@ -144,13 +146,10 @@ void CColModel::RemoveTrianglePlanes()
         m_pColData->RemoveTrianglePlanes();
 }
 
-void* CColModel::operator new(uint32 size)
-{
-	return CPools::ms_pColModelPool->New();
+void* CColModel::operator new(unsigned size) {
+    return GetColModelPool()->New();
 }
 
-void CColModel::operator delete(void* data)
-{
-    CPools::ms_pColModelPool->Delete(static_cast<CColModel*>(data));
+void CColModel::operator delete(void* data) {
+    GetColModelPool()->Delete(static_cast<CColModel*>(data));
 }
-

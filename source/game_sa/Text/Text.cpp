@@ -158,7 +158,7 @@ void CText::Load(bool bKeepMissionPack) {
     }
 
     CFileMgr::SetDir("TEXT");
-    FILESTREAM file = CFileMgr::OpenFile(filename, "rb");
+    auto file = CFileMgr::OpenFile(filename, "rb");
 
     uint16 version = 0;
     uint16 encoding = 0;
@@ -199,7 +199,7 @@ void CText::Load(bool bKeepMissionPack) {
     strcpy(m_szCdErrorText, GxtCharToAscii(text, 0));
     m_bCdErrorLoaded = true;
 
-    CFileMgr::SetDir(gta_empty_string);
+    CFileMgr::SetDir("");
 
     if (bKeepMissionPack)
         return;
@@ -208,7 +208,7 @@ void CText::Load(bool bKeepMissionPack) {
         if (FrontEndMenuManager.CheckMissionPackValidMenu()) {
             CTimer::Suspend();
             LoadMissionPackText();
-            CFileMgr::SetDir(gta_empty_string);
+            CFileMgr::SetDir("");
             CTimer::Resume();
         }
     }

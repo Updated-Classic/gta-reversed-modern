@@ -1,8 +1,8 @@
 /*
-Plugin-SDK (Grand Theft Auto San Andreas) source file
-Authors: GTA Community. See more here
-https://github.com/DK22Pac/plugin-sdk
-Do not delete this comment block. Respect others' work!
+    Plugin-SDK file
+    Authors: GTA Community. See more here
+    https://github.com/DK22Pac/plugin-sdk
+    Do not delete this comment block. Respect others' work!
 */
 
 #include "StdInc.h"
@@ -78,9 +78,7 @@ CAESound::CAESound(int16 bankSlotId, int16 sfxId, CAEAudioEntity* baseAudio, CVe
     m_nBankSlotId = bankSlotId;
     m_nSoundIdInSlot = sfxId;
     m_pBaseAudio = baseAudio;
-    m_vecPrevPosn.x = 0.0;
-    m_vecPrevPosn.y = 0.0;
-    m_vecPrevPosn.z = 0.0;
+    m_vecPrevPosn = CVector(0.0f, 0.0f, 0.0f);
     m_pPhysicalEntity = nullptr;
     m_fMaxVolume = -1.0F;
     m_nEvent = -1;
@@ -147,11 +145,7 @@ CAESound& CAESound::operator=(const CAESound& sound) {
 }
 
 void CAESound::UnregisterWithPhysicalEntity() {
-    if (!m_pPhysicalEntity)
-        return;
-
-    m_pPhysicalEntity->CleanUpOldReference(&m_pPhysicalEntity);
-    m_pPhysicalEntity = nullptr;
+    CEntity::ClearReference(m_pPhysicalEntity);
 }
 
 void CAESound::StopSound() {
@@ -189,11 +183,11 @@ void CAESound::UpdatePlayTime(int16 soundLength, int16 loopStartTime, int16 play
     m_nCurrentPlayPosition = loopStartTime + (m_nCurrentPlayPosition % soundLength);
 }
 
-void CAESound::GetRelativePosition(CVector* outPosn) {
+void CAESound::GetRelativePosition(CVector* outPos) {
     if (!GetFrontEnd())
-        return CAEAudioEnvironment::GetPositionRelativeToCamera(outPosn, &m_vecCurrPosn);
+        return CAEAudioEnvironment::GetPositionRelativeToCamera(outPos, &m_vecCurrPosn);
 
-    *outPosn = m_vecCurrPosn;
+    *outPos = m_vecCurrPosn;
 }
 
 void CAESound::CalculateFrequency() {

@@ -14,9 +14,9 @@
 #include "WaterCreatureManager_c.h"
 #include "MenuManager.h"
 #include "FireManager.h"
-#include "Fx_c.h"
+#include "Fx.h"
 #include "BreakManager_c.h"
-// todo: #include "BoneNodeManager_c.h"
+#include "BoneNodeManager_c.h"
 // todo: #include "ShadowManager.h"
 #include "PedType.h"
 #include "IKChainManager_c.h"
@@ -25,6 +25,19 @@
 #include "CarCtrl.h"
 #include "TagManager.h"
 #include "Clouds.h"
+#include "StuntJumpManager.h"
+#include "CustomCarPlateMgr.h"
+#include "TaskSimpleFight.h"
+#include "Conversations.h"
+#include "EntryExitManager.h"
+#include "TempColModels.h"
+#include "PedStats.h"
+#include "UserDisplay.h"
+#include "PostEffects.h"
+#include "Rope.h"
+#include "Ropes.h"
+#include "Glass.h"
+#include "TheScripts.h"
 
 char (&CGame::aDatFile)[32] = *reinterpret_cast<char (*)[32]>(0xB728EC);
 int32& CGame::currLevel = *reinterpret_cast<int32*>(0xB7290C);
@@ -158,7 +171,7 @@ void CGame::ShutDownForRestart() {
     gFireManager.Shutdown();
     g_fx.Reset();
     g_breakMan.ResetAll();
-    // todo: g_boneNodeMan.Reset();
+    g_boneNodeMan.Reset();
     g_ikChainMan.Reset();
     // todo: g_realTimeShadowMan.Shutdown();
     CTheZones::ResetZonesRevealed();
@@ -252,7 +265,7 @@ bool CGame::Init1(char const *datFile) {
 }
 
 // 0x5BA1A0
-void CGame::Init2(char const* datFile) {
+void CGame::Init2(const char* datFile) {
     LoadingScreen("Loading the Game", "Add Particles");
     CTheZones::PostZoneCreation();
     CEntryExitManager::PostEntryExitsCreation();
@@ -349,8 +362,8 @@ void CGame::Init2(char const* datFile) {
 }
 
 // 0x5BA400
-void CGame::Init3(char const* datFile) {
-    plugin::Call<0x5BA400, char const*>(datFile);
+void CGame::Init3(const char* datFile) {
+    plugin::Call<0x5BA400, const char*>(datFile);
 }
 
 // 0x53BC80

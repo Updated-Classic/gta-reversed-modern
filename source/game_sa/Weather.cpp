@@ -1,5 +1,5 @@
 /*
-    Plugin-SDK (Grand Theft Auto San Andreas) source file
+    Plugin-SDK file
     Authors: GTA Community. See more here
     https://github.com/DK22Pac/plugin-sdk
     Do not delete this comment block. Respect others' work!
@@ -61,7 +61,7 @@ void CWeather::InjectHooks() {
     RH_ScopedInstall(Init, 0x72A480);
     // RH_ScopedInstall(AddRain, 0x72A9A0);
     // RH_ScopedInstall(AddSandStormParticles, 0x72A820);
-    // RH_ScopedInstall(FindWeatherTypesList, 0x72A520, true); // bad
+    RH_ScopedInstall(FindWeatherTypesList, 0x72A520);
     RH_ScopedInstall(ForceWeather, 0x72A4E0);
     RH_ScopedInstall(ForceWeatherNow, 0x72A4F0);
     // RH_ScopedInstall(ForecastWeather, 0x72A590);
@@ -103,11 +103,8 @@ void CWeather::AddSandStormParticles() {
     plugin::Call<0x72A820>();
 }
 
-// todo: fixme
 // 0x72A520
 const eWeatherType* CWeather::FindWeatherTypesList() {
-    return plugin::CallAndReturn<const eWeatherType*, 0x72A520>();
-
     switch (WeatherRegion) {
     case WEATHER_REGION_LA:
         return WeatherTypesListLA;
@@ -133,9 +130,9 @@ void CWeather::ForceWeather(eWeatherType weatherType) {
 
 // 0x72A4F0
 void CWeather::ForceWeatherNow(eWeatherType weatherType) {
-  ForcedWeatherType = weatherType;
-  OldWeatherType = weatherType;
-  NewWeatherType = weatherType;
+    ForcedWeatherType = weatherType;
+    OldWeatherType = weatherType;
+    NewWeatherType = weatherType;
 }
 
 // 0x72A590
@@ -187,10 +184,10 @@ void CWeather::RenderRainStreaks() {
     constexpr auto RAIN_STREAK_COUNT{ 32u };
 
     // These are arrays of size `RAIN_STREAK_COUNT`
-    static int32* streakPosX;     // 0xC81420;
-    static int32* streakPosY;     // 0xC8141C;
-    static int32* streakPosZ;     // 0xC81418;
-    static uint8* streakStrength; // 0xC81414
+    static int32*& streakPosX = *(int32**)0xC81420; // TODO | STATICREF
+    static int32*& streakPosY = *(int32**)0xC8141C; // TODO | STATICREF
+    static int32*& streakPosZ = *(int32**)0xC81418; // TODO | STATICREF
+    static uint8*& streakStrength = *(uint8**)0xC81414; // TODO | STATICREF
 
     if (!streakPosX) {
         // This stuff isn't even freed anywhere..
@@ -240,7 +237,7 @@ void CWeather::RenderRainStreaks() {
         const float posMul = (s % 2) ? Wind * 0.1f : Wind * Rain * 0.1f;
         offsets[1] = offsets[0] - WindDir * posMul + CVector{ 0.0f, 0.0f, CGeneral::GetRandomNumberInRange(0.1f, 0.5f) };
 
-        const uint8 alphas[]{ streakStrength[s], streakStrength[s] / 2u };
+        const uint8 alphas[]{ streakStrength[s], streakStrength[s] / 2u }; // todo: Non-constant-expression cannot be narrowed from type 'unsigned int' to 'uint8' (aka 'unsigned char') in initializer list
         for (unsigned v = 0; v < 2; v++) {
             RxObjSpace3DVertex* vertex = &aTempBufferVertices[GetRealVertexIndex(v)];
 
@@ -285,10 +282,10 @@ void CWeather::RenderRainStreaks() {
 
 // 0x72A790
 void CWeather::SetWeatherToAppropriateTypeNow() {
-    CVector playerCoors = FindPlayerCoors(-1);
+    CVector playerCoors = FindPlayerCoors();
     UpdateWeatherRegion(&playerCoors);
 
-    auto weatherType = static_cast<eWeatherType>(*FindWeatherTypesList());
+    auto weatherType = FindWeatherTypesList()[0];
     ForcedWeatherType = WEATHER_UNDEFINED;
     OldWeatherType = weatherType;
     NewWeatherType = weatherType;

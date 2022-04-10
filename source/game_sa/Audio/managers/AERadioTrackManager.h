@@ -1,5 +1,5 @@
 /*
-    Plugin-SDK (Grand Theft Auto San Andreas) header file
+    Plugin-SDK file
     Authors: GTA Community. See more here
     https://github.com/DK22Pac/plugin-sdk
     Do not delete this comment block. Respect others' work!
@@ -68,7 +68,7 @@ class CAERadioTrackManager {
 public:
     bool           m_bInitialised;
     bool           m_bDisplayStationName;
-    char           field_2;
+    char           m_prev;
     bool           m_bEnabledInPauseMode;
     bool           m_bBassEnhance;
     bool           m_bPauseMode;

@@ -111,8 +111,7 @@ void CPedScriptedTaskRecordData::SetAsAttractorScriptTask(CPed* ped, int32 opcod
 // 0x608350
 void CPedScriptedTaskRecordData::Flush()
 {
-    if (m_ped)
-        m_ped->CleanUpOldReference(reinterpret_cast<CEntity**>(&m_ped));
+    CEntity::SafeCleanUpRef(m_ped);
     m_ped = nullptr;
     m_event = nullptr;
     m_task = nullptr;
@@ -178,16 +177,16 @@ void CPedScriptedTaskRecord::Process()
             else if (taskRecordData.m_task) {
                 eScriptedTaskStatus status = taskRecordData.m_status;
                 if (status == eScriptedTaskStatus::GROUP || status == eScriptedTaskStatus::BRAIN) {
-                    CTask* pScriptedTask = nullptr;
+                    CTask* scriptedTask = nullptr;
                     if (status == eScriptedTaskStatus::GROUP) {
                         CPedGroup* pedGroup = CPedGroups::GetPedsGroup(taskRecordData.m_ped);
                         if (pedGroup)
-                            pScriptedTask = pedGroup->GetIntelligence().GetTaskScriptCommand(taskRecordData.m_ped);
+                            scriptedTask = pedGroup->GetIntelligence().GetTaskScriptCommand(taskRecordData.m_ped);
                     }
                     else if (status == eScriptedTaskStatus::BRAIN) {
-                        pScriptedTask = CScriptedBrainTaskStore::GetTask(taskRecordData.m_ped);
+                        scriptedTask = CScriptedBrainTaskStore::GetTask(taskRecordData.m_ped);
                     }
-                    if (pScriptedTask != taskRecordData.m_task)
+                    if (scriptedTask != taskRecordData.m_task)
                         taskRecordData.Flush();
                 }
                 else {

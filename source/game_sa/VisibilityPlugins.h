@@ -1,5 +1,5 @@
 /*
-    Plugin-SDK (Grand Theft Auto San Andreas) header file
+    Plugin-SDK file
     Authors: GTA Community. See more here
     https://github.com/DK22Pac/plugin-sdk
     Do not delete this comment block. Respect others' work!
@@ -7,12 +7,14 @@
 #pragma once
 
 #include "RenderWare.h"
-#include "Entity.h"
-#include "ClumpModelInfo.h"
-#include "AtomicModelInfo.h"
 #include "LinkList.h"
 
+class CEntity;
+class CClumpModelInfo;
+class CAtomicModelInfo;
+
 enum eAtomicComponentFlag {
+    ATOMIC_IS_NOT_PRESENT = 0x0,
     ATOMIC_IS_OK_STATE = 0x1,
     ATOMIC_IS_DAM_STATE = 0x2,
     ATOMIC_IS_LEFT = 0x4,
@@ -54,6 +56,11 @@ struct tFrameVisibilityPlugin {
     };
 };
 VALIDATE_SIZE(tFrameVisibilityPlugin, 0x4);
+
+// TODO: Probably belongs inside `CVisibilityPlugins`
+static void weaponPedsForPc_Insert(CPed* ped) {
+    plugin::Call<0x5E46D0>(ped);
+}
 
 class CVisibilityPlugins {
 public:
@@ -129,7 +136,7 @@ public:
     static CClumpModelInfo* GetClumpModelInfo(RpClump* clump);
     static float GetDistanceSquaredFromCamera(RwFrame* frame);
     static float GetDistanceSquaredFromCamera(CVector* pPos);
-    static float GetDotProductWithCameraVector(RwMatrixTag* atomicMatrix, RwMatrixTag* clumpMatrix, uint16 flags);
+    static float GetDotProductWithCameraVector(RwMatrix* atomicMatrix, RwMatrix* clumpMatrix, uint16 flags);
     static int32 GetFrameHierarchyId(RwFrame* frame);
     static int16 GetModelInfoIndex(RpAtomic* atomic);
     static int16 GetUserValue(RpAtomic* atomic);
@@ -139,7 +146,7 @@ public:
     static void RenderAlphaAtomics();
     static RpAtomic* RenderAtomicWithAlphaCB(RpAtomic* atomic, void* data);
     static void RenderBoatAlphaAtomics();
-    static void RenderEntity(CEntity* entity, int32 unused, float distance);
+    static void RenderEntity(CEntity* entity, float distance);
     static void RenderFadingAtomic(CBaseModelInfo* modelInfo, RpAtomic* atomic, int32 alpha);
     static void RenderFadingClump(CBaseModelInfo* modelInfo, RpClump* clump, int32 alpha);
     static RpAtomic* RenderFadingClumpCB(RpAtomic* atomic);

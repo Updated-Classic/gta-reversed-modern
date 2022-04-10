@@ -6,6 +6,12 @@
 #include "PedType.h"
 #include "C_PcSave.h"
 #include "TagManager.h"
+#include "Radar.h"
+#include "StuntJumpManager.h"
+#include "EntryExitManager.h"
+#include "Rope.h"
+#include "Ropes.h"
+#include "TheScripts.h"
 
 constexpr uint32 SIZE_OF_ONE_GAME_IN_BYTES = 202748;
 

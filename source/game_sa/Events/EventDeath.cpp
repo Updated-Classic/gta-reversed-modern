@@ -1,12 +1,14 @@
 #include "StdInc.h"
 
+#include "EventDeath.h"
+
 void CEventDeath::InjectHooks()
 {
     RH_ScopedClass(CEventDeath);
     RH_ScopedCategory("Events");
 
     RH_ScopedInstall(Constructor, 0x4ADDF0);
-    RH_ScopedInstall(Clone_Reversed, 0x4B6E30);
+    RH_ScopedVirtualInstall(Clone, 0x4B6E30);
 }
 
 CEventDeath::CEventDeath(bool bDrowning, uint32 deathTimeInMs)

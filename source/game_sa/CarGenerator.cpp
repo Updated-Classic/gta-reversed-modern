@@ -5,6 +5,7 @@
 #include "TheCarGenerators.h"
 #include "Occlusion.h"
 #include "CarCtrl.h"
+#include "TheScripts.h"
 
 bool& CCarGenerator::m_bHotdogVendorPositionOffsetInitialized = *reinterpret_cast<bool*>(0xC2B974);
 CVector& CCarGenerator::m_HotdogVendorPositionOffset = *reinterpret_cast<CVector*>(0xC2B968);
@@ -27,23 +28,23 @@ void CCarGenerator::InjectHooks()
 // 0x6F32E0
 bool CCarGenerator::CheckForBlockage(int32 modelId)
 {
-    auto pCarColModel = CModelInfo::GetModelInfo(modelId)->GetColModel();
-    float radius = pCarColModel ? pCarColModel->GetBoundRadius() : 2.0f;
+    auto colModel = CModelInfo::GetModelInfo(modelId)->GetColModel();
+    float radius = colModel ? colModel->GetBoundRadius() : 2.0f;
 
     int16 entityCount;
-    CEntity* pObjectList[8];
+    CEntity* objects[8];
 
     CVector posn = UncompressLargeVector(m_vecPosn);
-    CWorld::FindObjectsKindaColliding(posn, radius, true, &entityCount, 8, pObjectList, false, true, true, false, false);
+    CWorld::FindObjectsKindaColliding(posn, radius, true, &entityCount, 8, objects, false, true, true, false, false);
 
     for (int32 i = 0; i < entityCount; i++)
     {
-        auto pEntityColModel = CModelInfo::GetModelInfo(pObjectList[i]->m_nModelIndex)->GetColModel();
+        auto pEntityColModel = CModelInfo::GetModelInfo(objects[i]->m_nModelIndex)->GetColModel();
 
-        if (pCarColModel)
+        if (colModel)
         {
-            if (pObjectList[i]->GetPosition().z + pEntityColModel->GetBoundingBox().m_vecMax.z + 1.0f > posn.z + pCarColModel->GetBoundingBox().m_vecMin.z &&
-                pObjectList[i]->GetPosition().z + pEntityColModel->GetBoundingBox().m_vecMin.z - 1.0f < posn.z + pCarColModel->GetBoundingBox().m_vecMax.z)
+            if (objects[i]->GetPosition().z + pEntityColModel->GetBoundingBox().m_vecMax.z + 1.0f > posn.z + colModel->GetBoundingBox().m_vecMin.z &&
+                objects[i]->GetPosition().z + pEntityColModel->GetBoundingBox().m_vecMin.z - 1.0f < posn.z + colModel->GetBoundingBox().m_vecMax.z)
             {
                 bWaitUntilFarFromPlayer = true;
                 return true;
@@ -51,8 +52,8 @@ bool CCarGenerator::CheckForBlockage(int32 modelId)
         }
         else
         {
-            if (pObjectList[i]->GetPosition().z + pEntityColModel->GetBoundingBox().m_vecMax.z + 1.0f > posn.z - 1.0f &&
-                pObjectList[i]->GetPosition().z + pEntityColModel->GetBoundingBox().m_vecMin.z - 1.0f < posn.z + 1.0f)
+            if (objects[i]->GetPosition().z + pEntityColModel->GetBoundingBox().m_vecMax.z + 1.0f > posn.z - 1.0f &&
+                objects[i]->GetPosition().z + pEntityColModel->GetBoundingBox().m_vecMin.z - 1.0f < posn.z + 1.0f)
             {
                 bWaitUntilFarFromPlayer = true;
                 return true;
@@ -111,8 +112,8 @@ void CCarGenerator::DoInternalProcessing()
     int32 actualModelId;
     CVehicle* vehicle;
     float baseZ;
-    CColPoint colPoint;
-    CEntity* pEntity;
+    CColPoint colPoint{};
+    CEntity* entity;
     tCarGenPlateText plate{};
     int32 tractorDriverPedType;
 
@@ -195,19 +196,19 @@ void CCarGenerator::DoInternalProcessing()
 
         CVector posn = UncompressLargeVector(m_vecPosn);
         baseZ = posn.z;
-        if (baseZ <= -100.0f)
+        if (baseZ <= MAP_Z_LOW_LIMIT)
             baseZ = CWorld::FindGroundZForCoord(posn.x, posn.y);
         vehicle->m_nExtendedRemovalRange = 255;
     }
     else
     {
         CVector posn = UncompressLargeVector(m_vecPosn);
-        if (posn.z > -100.0f)
+        if (posn.z > MAP_Z_LOW_LIMIT)
             posn.z += 1.0f;
         else
             posn.z = 1000.0f;
 
-        if (!CWorld::ProcessVerticalLine(posn, -1000.0f, colPoint, pEntity, true, false, false, false, false, false, nullptr))
+        if (!CWorld::ProcessVerticalLine(posn, -1000.0f, colPoint, entity, true, false, false, false, false, false, nullptr))
             return;
 
         baseZ = colPoint.m_vecPoint.z;
@@ -215,9 +216,9 @@ void CCarGenerator::DoInternalProcessing()
         CTheCarGenerators::m_SpecialPlateHandler.Find(plate.m_nCarGenId, plate.m_szPlateText);
         if (plate.m_szPlateText[0])
         {
-            auto pModel = CModelInfo::GetModelInfo(actualModelId)->AsVehicleModelInfoPtr();
-            if (pModel->m_pPlateMaterial)
-                pModel->SetCustomCarPlateText(plate.m_szPlateText);
+            auto mi = CModelInfo::GetModelInfo(actualModelId)->AsVehicleModelInfoPtr();
+            if (mi->m_pPlateMaterial)
+                mi->SetCustomCarPlateText(plate.m_szPlateText);
         }
 
         switch (CModelInfo::GetModelInfo(actualModelId)->AsVehicleModelInfoPtr()->m_nVehicleType)
@@ -239,11 +240,11 @@ void CCarGenerator::DoInternalProcessing()
             break;
         case VEHICLE_TYPE_BIKE:
             vehicle = new CBike(actualModelId, PARKED_VEHICLE);
-            vehicle->AsBike()->damageFlags.bDamageFlag4 = true;
+            vehicle->AsBike()->bikeFlags.bIsStanding = true;
             break;
         case VEHICLE_TYPE_BMX:
             vehicle = new CBmx(actualModelId, PARKED_VEHICLE);
-            vehicle->AsBike()->damageFlags.bDamageFlag4 = true;
+            vehicle->AsBike()->bikeFlags.bIsStanding = true;
             break;
         case VEHICLE_TYPE_TRAILER:
             vehicle = new CTrailer(actualModelId, PARKED_VEHICLE);
@@ -273,11 +274,15 @@ void CCarGenerator::DoInternalProcessing()
     if (!nightTime &&
         (vehicle->m_nModelIndex == MODEL_TRACTOR || vehicle->m_nModelIndex == MODEL_COMBINE))
     {
+        // 0x6F3BF4
+
         CVector vehPosn = vehicle->GetPosition();
         CNodeAddress pathLink;
         ThePaths.FindNodeClosestToCoors(&pathLink, vehPosn.x, vehPosn.y, vehPosn.z, 0, 20.0F, 0, 0, 0, 0, 1);
-        if (pathLink.m_wAreaId != -1 || pathLink.m_wNodeId != -1)
+        if (pathLink.m_wAreaId != (uint16)-1)
         {
+            assert(pathLink.m_wNodeId != (uint16)-1);
+
             CPathNode& pathNode = ThePaths.m_pPathNodes[pathLink.m_wAreaId][pathLink.m_wNodeId];
             if (pathNode.m_nNumLinks != 0)
             {
@@ -304,7 +309,7 @@ void CCarGenerator::DoInternalProcessing()
 
     if (actualModelId == MODEL_HOTDOG && m_nModelId == MODEL_HOTDOG && CStreaming::GetInfo(MODEL_BMOCHIL).IsLoaded())
     {
-        CPed* ped = CPopulation::AddPed(ePedType::PED_TYPE_CIVMALE, MODEL_BMOCHIL, vehicle->GetPosition() - vehicle->GetRight() * 3.0f, false);
+        CPed* ped = CPopulation::AddPed(PED_TYPE_CIVMALE, MODEL_BMOCHIL, vehicle->GetPosition() - vehicle->GetRight() * 3.0f, false);
         if (ped)
         {
             if (!m_bHotdogVendorPositionOffsetInitialized)
@@ -334,7 +339,19 @@ void CCarGenerator::DoInternalProcessing()
         m_nSecondaryColor = vehicle->m_nSecondaryColor;
     }
     CVisibilityPlugins::SetClumpAlpha(vehicle->m_pRwClump, 0);
-    m_nVehicleHandle = CPools::ms_pVehiclePool->GetRef(vehicle);
+    m_nVehicleHandle = GetVehiclePool()->GetRef(vehicle);
+
+    // Originally, R* did a signed comparison between unsigned \r m_nGenerateCount and signed 32bit constant -1.
+    // This made the generated code to always skip the decrementation.
+    // However, this bug does not affect the game at all because all cargens created by the script
+    // are either disabled or infinite.
+#ifdef FIX_BUGS
+    if (m_nGenerateCount < (uint16)-1)
+#else
+    if (m_nGenerateCount < -1)
+#endif
+        m_nGenerateCount--;
+
     m_nNextGenTime = CalcNextGen();
 }
 
@@ -354,15 +371,15 @@ void CCarGenerator::Process()
 
     if (m_nVehicleHandle != -1)
     {
-        auto pVeh = CPools::ms_pVehiclePool->GetAtRef(m_nVehicleHandle);
-        if (!pVeh)
+        auto vehicle = GetVehiclePool()->GetAtRef(m_nVehicleHandle);
+        if (!vehicle)
             m_nVehicleHandle = -1;
-        else if (pVeh->m_nStatus == eEntityStatus::STATUS_PLAYER)
+        else if (vehicle->m_nStatus == eEntityStatus::STATUS_PLAYER)
         {
             m_nNextGenTime += 60000;
             m_nVehicleHandle = -1;
             bWaitUntilFarFromPlayer = true;
-            pVeh->m_nExtendedRemovalRange = 0;
+            vehicle->m_nExtendedRemovalRange = 0;
             if (m_nModelId < 0)
                 m_nModelId = -1;
         }
@@ -380,7 +397,7 @@ void CCarGenerator::Setup(const CVector& posn, float angle, int32 modelId, int16
     m_nAngle = (char)(angle * magic);
     m_nModelId = modelId;
     m_nPrimaryColor = (uint8)(color1);
-    m_nSecondaryColor = (uint8)(color2);;
+    m_nSecondaryColor = (uint8)(color2);
 
     bWaitUntilFarFromPlayer = false;
     bIgnorePopulationLimit = ignorePopulationLimit;
@@ -408,7 +425,7 @@ void CCarGenerator::SwitchOff()
 // 0x6F32C0
 void CCarGenerator::SwitchOn()
 {
-    m_nGenerateCount = -1;
+    m_nGenerateCount = (uint16)-1;
     m_nNextGenTime = CalcNextGen();
 }
 
