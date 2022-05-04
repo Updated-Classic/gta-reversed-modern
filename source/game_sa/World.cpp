@@ -34,7 +34,6 @@ CVector& CWorld::SnookerTableMax = *(CVector*)0x8CDEF4;
 CVector& CWorld::SnookerTableMin = *(CVector*)0x8CDF00;
 uint32& FilledColPointIndex = *(uint32*)0xB7CD7C;
 int16& TAG_SPRAYING_INCREMENT_VAL = *(int16*)0x8CDEF0;
-int8& gCurCamColVars = *(int8*)0x8CCB80;
 
 void CWorld::InjectHooks() {
     RH_ScopedClass(CWorld);
@@ -939,6 +938,8 @@ void CWorld::FindObjectsIntersectingAngledCollisionBoxSectorList(CPtrList& ptrLi
 // Man, sometimes I wonder whoever wrote this code was just drunk
 // Also, seems like namespaces weren't a thing in C++03.. Well, at least to R*.
 void CWorld::FindMissionEntitiesIntersectingCubeSectorList(CPtrList& ptrList, const CVector& cornerA, const CVector& cornerB, int16* outCount, int16 maxCount, CEntity** outEntities, bool vehiclesList, bool pedsList, bool objectsList) {
+    assert(outEntities);
+
     // NOTSA - Easier to do it this way..
     const CBoundingBox bb{ cornerA, cornerB };
     for (CPtrNode* node = ptrList.GetNode(), *next{}; node; node = next) {
@@ -968,7 +969,8 @@ void CWorld::FindMissionEntitiesIntersectingCubeSectorList(CPtrList& ptrList, co
 
         if (bb.IsPointWithin(entity->GetPosition())) {
             if (*outCount < maxCount) {
-                outEntities[*outCount++] = entity;
+                if (outEntities)
+                    outEntities[*outCount++] = entity;
             } else {
                 break; // NOTSA - But makes sense lol
             }
@@ -1088,7 +1090,7 @@ void CWorld::SetPedsChoking(float x, float y, float z, float radius, CEntity* ga
                     eWeaponType::WEAPON_TEARGAS,
                     1,
                     PED_PIECE_TORSO,
-                    ped->GetLocalDirection(ped->GetPosition() - CVector{x, y, z})
+                    ped->GetLocalDirection(ped->GetPosition2D() - CVector2D{x, y})
                 );   
             }
         }
@@ -1167,12 +1169,11 @@ void CWorld::RemoveFallenPeds() {
             continue;
 
         const CVector& vecPedPos = ped->GetPosition();
-        if (vecPedPos.z > -100.0f)
+        if (vecPedPos.z > MAP_Z_LOW_LIMIT)
             continue;
         if (!ped->IsCreatedBy(ePedCreatedBy::PED_GAME) || ped->IsPlayer()) {
-            CNodeAddress pathNodeAddress;
-            ThePaths.FindNodeClosestToCoors(&pathNodeAddress, vecPedPos.x, vecPedPos.y, vecPedPos.z, 1, 1000000.0f, 0, 0, 0, 0, 0);
-            if (pathNodeAddress.m_wAreaId != (uint16)-1) {
+            CNodeAddress pathNodeAddress = ThePaths.FindNodeClosestToCoors(vecPedPos, 1, 1000000.0f, 0, 0, 0, 0, 0);            
+            if (pathNodeAddress.IsAreaValid()) {
                 CVector pathNodePos = ThePaths.GetPathNode(pathNodeAddress)->GetNodeCoors();
                 pathNodePos.z += 2.0f;
                 ped->Teleport(pathNodePos, false);
@@ -1192,7 +1193,7 @@ void CWorld::RemoveFallenCars() {
             continue;
 
         const CVector& vecPos = vehicle->GetPosition();
-        if (vecPos.z > -100.0f)
+        if (vecPos.z > MAP_Z_LOW_LIMIT)
             continue;
 
         const auto ShouldWeKeepIt = [vehicle]() {
@@ -1206,9 +1207,8 @@ void CWorld::RemoveFallenCars() {
         };
 
         if (ShouldWeKeepIt()) {
-            CNodeAddress pathNodeAddress;
-            ThePaths.FindNodeClosestToCoors(&pathNodeAddress, vecPos.x, vecPos.y, vecPos.z, 1, 1000000.0f, 0, 0, 0, 0, 0);
-            if (pathNodeAddress.m_wAreaId != (uint16)-1) {
+            CNodeAddress pathNodeAddress = ThePaths.FindNodeClosestToCoors(vecPos, 1, 1000000.0f, 0, 0, 0, 0, 0);
+            if (pathNodeAddress.IsAreaValid()) {
                 const auto pathNodePos = ThePaths.GetPathNode(pathNodeAddress)->GetNodeCoors();
                 vehicle->Teleport(pathNodePos + CVector(0, 0, 3), true);
             } else
@@ -1362,9 +1362,7 @@ void CWorld::ClearCarsFromArea(float minX, float minY, float minZ, float maxX, f
         { // see ClearExcitingStuffFromArea | inlined
         if (auto& driver = veh->m_pDriver) {
             CPopulation::RemovePed(driver);
-            if (driver) // Not even sure why this is done - Ped::Remove already unlinks it from the vehicle it's in
-                driver->CleanUpOldReference(reinterpret_cast<CEntity**>(&driver));
-            driver = nullptr;
+            CEntity::ClearReference(driver); // Not even sure why this is done - Ped::Remove already unlinks it from the vehicle it's in
         }
 
         for (auto j = 0; j < veh->m_nMaxPassengers; j++) {
@@ -1527,6 +1525,7 @@ bool CWorld::ProcessLineOfSightSectorList(CPtrList& ptrList, const CColLine& col
         const auto entity = static_cast<CEntity*>(node->m_item);
         if (entity->IsScanCodeCurrent() || entity == pIgnoreEntity)
             continue;
+        // Scan code incremented at the bottom
 
         if (doIgnoreCameraCheck && CameraToIgnoreThisObject(entity))
             continue;
@@ -1641,6 +1640,7 @@ bool CWorld::ProcessLineOfSightSectorList(CPtrList& ptrList, const CColLine& col
                     if (wheelTouchDist < localMinTouchDist) {
                         localMinTouchDist = wheelTouchDist;
                         outColPoint = wheelCP;
+                        outEntity = entity;
                     } else {
                         // Since this col check consists only of checking the wheels
                         // if `colLine.start` is at the opposite side to the col point 
@@ -1677,10 +1677,14 @@ bool CWorld::ProcessLineOfSightSectorList(CPtrList& ptrList, const CColLine& col
         }
 
         entity->SetCurrentScanCode(); // Placed here, because the above switch has some type dependent conditions
+
+        if (localMinTouchDist < minTouchDistance) {
+            assert(outEntity); // If there was a collision there must be an entity as well!
+        }
     }
 
     if (localMinTouchDist < minTouchDistance) {
-        //assert(outEntity != 0); // There must be one
+        // assert(outEntity); // If there was a collision there must be an entity as well! - Checked in the above loop already.
         minTouchDistance = localMinTouchDist;
         return true;
     }
@@ -1868,9 +1872,9 @@ void CWorld::TriggerExplosionSectorList(CPtrList& ptrList, const CVector& point,
             if (const auto attachedTo = ped->m_pAttachedTo; attachedTo && attachedTo->IsVehicle() && attachedTo->m_nStatus == STATUS_WRECKED) {
                 CPedDamageResponseCalculator pedDamageResponseCalculator{ creator, 1000.f, WEAPON_EXPLOSION, PED_PIECE_TORSO, false};
                 
-                CEventDamage eventDamage{ creator, CTimer::GetTimeInMS(), WEAPON_EXPLOSION, PED_PIECE_TORSO, (uint8)pedLocalDir, false, !!ped->bIsTalking };
+                CEventDamage eventDamage{ creator, CTimer::GetTimeInMS(), WEAPON_EXPLOSION, PED_PIECE_TORSO, pedLocalDir, false, !!ped->bIsTalking };
                 if (eventDamage.AffectsPed(ped)) {
-                    pedDamageResponseCalculator.ComputeDamageResponse(ped, &eventDamage.m_damageResponse, true);
+                    pedDamageResponseCalculator.ComputeDamageResponse(ped, eventDamage.m_damageResponse, true);
                 } else {
                     eventDamage.m_damageResponse.m_bDamageCalculated = true;
                 }
@@ -1899,7 +1903,7 @@ void CWorld::TriggerExplosionSectorList(CPtrList& ptrList, const CVector& point,
                 
                 CEventDamage eventDamage{ creator, CTimer::GetTimeInMS(), WEAPON_EXPLOSION, PED_PIECE_TORSO, (uint8)pedLocalDir, false, !!ped->bIsTalking };
                 if (eventDamage.AffectsPed(ped)) {
-                    pedDamageResponseCalculator.ComputeDamageResponse(ped, &eventDamage.m_damageResponse, true);
+                    pedDamageResponseCalculator.ComputeDamageResponse(ped, eventDamage.m_damageResponse, true);
                 }
                 else {
                     eventDamage.m_damageResponse.m_bDamageCalculated = true;
@@ -2548,9 +2552,7 @@ void CWorld::ClearExcitingStuffFromArea(const CVector& point, float radius, uint
         { // todo: see ClearCarsFromArea | inlined
         if (auto& driver = veh->m_pDriver) {
             CPopulation::RemovePed(driver);
-            if (driver)
-                driver->CleanUpOldReference(reinterpret_cast<CEntity**>(&driver));
-            driver = nullptr;
+            CEntity::ClearReference(driver);
         }
 
         for (auto j = 0; j < veh->m_nMaxPassengers; j++) {
@@ -2784,6 +2786,7 @@ bool CWorld::ProcessLineOfSightSector(CSector& sector, CRepeatSector& repeatSect
     bIncludeBikers = bIncludeBikers_Original;
 
     if (localMaxTouchDist < maxTouchDistance) {
+        assert(outEntity); // If there was a collision there must be an entity as well!
         maxTouchDistance = localMaxTouchDist;
         return true;
     }
@@ -2842,7 +2845,7 @@ bool CWorld::ProcessLineOfSight(const CVector& origin, const CVector& target, CC
 
     float touchDist{1.f};
     const auto ProcessSector = [&, line = CColLine{origin, target}](int32 x, int32 y) {
-        ProcessLineOfSightSector(
+        return ProcessLineOfSightSector(
             *GetSector(x, y),
             *GetRepeatSector(x, y),
             line,
@@ -2966,7 +2969,12 @@ bool CWorld::ProcessLineOfSight(const CVector& origin, const CVector& target, CC
             }
         }
     }
-    return touchDist < 1.f;
+    if (touchDist < 1.f) {
+        assert(outEntity); // If there was a collision there must be an entity as well!
+        return true;
+    }
+    return false;
+    //return touchDist < 1.f;
 }
 
 // 0x4072E0
