@@ -108,6 +108,7 @@
 #include "GridRef.h"
 #include "MenuSystem.h"
 #include "InterestingEvents.h"
+#include "3dMarkers.h"
 
 // Tasks
 #include "TaskSimpleAbseil.h"
@@ -412,6 +413,7 @@ void InjectHooksMain() {
     CGridRef::InjectHooks();
     CShopping::InjectHooks();
     CInformFriendsEventQueue::InjectHooks();
+    C3dMarker::InjectHooks();
     C3dMarkers::InjectHooks();
     CSpecialFX::InjectHooks();
     CFallingGlassPane::InjectHooks();

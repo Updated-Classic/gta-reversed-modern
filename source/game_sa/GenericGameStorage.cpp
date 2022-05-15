@@ -12,6 +12,7 @@
 #include "Rope.h"
 #include "Ropes.h"
 #include "TheScripts.h"
+#include "3dMarkers.h"
 
 constexpr uint32 SIZE_OF_ONE_GAME_IN_BYTES = 202748;
 

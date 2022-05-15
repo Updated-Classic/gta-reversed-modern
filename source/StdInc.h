@@ -201,8 +201,6 @@ namespace rng = std::ranges;
 #include "game_sa\WaterCreatureManager_c.h"
 #include "game_sa\CdStreamInfo.h"
 #include "game_sa\Plugins\TwoDEffectPlugin\2dEffect.h"
-#include "game_sa\3dMarker.h"
-#include "game_sa\3dMarkers.h"
 #include "game_sa\Accident.h"
 #include "game_sa\AccidentManager.h"
 #include "game_sa\AttractorScanner.h"

@@ -2,6 +2,7 @@
 
 #include "Checkpoints.h"
 #include "Checkpoint.h"
+#include "3dMarker.h"
 
 void CCheckpoints::InjectHooks() {
     RH_ScopedClass(CCheckpoints);
