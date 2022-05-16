@@ -177,8 +177,7 @@ void CRadar::InjectHooks() {
 }
 
 // 0x587FB0
-void CRadar::Initialise()
-{
+void CRadar::Initialise() {
     airstrip_blip = 0;
     airstrip_location = 0;
 
@@ -198,8 +197,7 @@ void CRadar::Initialise()
 }
 
 // 0x585940
-void CRadar::Shutdown()
-{
+void CRadar::Shutdown() {
     for (auto& sprite : RadarBlipSprites) {
         sprite.Delete();
     }
@@ -207,8 +205,7 @@ void CRadar::Shutdown()
 }
 
 // 0x5827D0
-void CRadar::LoadTextures()
-{
+void CRadar::LoadTextures() {
     CTxdStore::PushCurrentTxd();
     CTxdStore::SetCurrentTxd(CTxdStore::FindTxdSlot("hud"));
 
@@ -219,8 +216,7 @@ void CRadar::LoadTextures()
 }
 
 // 0x582820 - Seemingly unused but actually just inlined
-int32 CRadar::GetNewUniqueBlipIndex(int32 index)
-{
+int32 CRadar::GetNewUniqueBlipIndex(int32 index) {
     auto& trace = ms_RadarTrace[index];
     if (trace.m_nCounter >= std::numeric_limits<uint16>::max() - 1)
         trace.m_nCounter = 1; // Wrap back to 1
@@ -230,8 +226,7 @@ int32 CRadar::GetNewUniqueBlipIndex(int32 index)
 }
 
 // 0x582870
-int32 CRadar::GetActualBlipArrayIndex(int32 blipIndex)
-{
+int32 CRadar::GetActualBlipArrayIndex(int32 blipIndex) {
     if (blipIndex == -1)
         return -1;
 
@@ -245,8 +240,7 @@ int32 CRadar::GetActualBlipArrayIndex(int32 blipIndex)
 }
 
 // 0x5828A0
-void CRadar::DrawLegend(int32 x, int32 y, int32 blipType)
-{
+void CRadar::DrawLegend(int32 x, int32 y, int32 blipType) {
     if (blipType == RADAR_SPRITE_NONE) { // None => Player position
         blipType = RADAR_SPRITE_MAP_HERE;
     }
@@ -350,8 +344,7 @@ void CRadar::DrawLegend(int32 x, int32 y, int32 blipType)
 }
 
 // 0x5832F0
-float CRadar::LimitRadarPoint(CVector2D& point)
-{
+float CRadar::LimitRadarPoint(CVector2D& point) {
     float mag = point.Magnitude();
 
     if (FrontEndMenuManager.m_bDrawRadarOrMap)
@@ -364,8 +357,7 @@ float CRadar::LimitRadarPoint(CVector2D& point)
 }
 
 // 0x583350
-void CRadar::LimitToMap(float* pX, float* pY)
-{
+void CRadar::LimitToMap(float* pX, float* pY) {
     float zoom = FrontEndMenuManager.m_bMapLoaded ? FrontEndMenuManager.m_fMapZoom : 140.0f;
 
     float xMin = (FrontEndMenuManager.m_vMapOrigin.x - zoom) * SCREEN_WIDTH_UNIT;
@@ -378,8 +370,7 @@ void CRadar::LimitToMap(float* pX, float* pY)
 }
 
 // 0x583420
-uint8 CRadar::CalculateBlipAlpha(float distance)
-{
+uint8 CRadar::CalculateBlipAlpha(float distance) {
     if (FrontEndMenuManager.m_bDrawRadarOrMap) {
         return 255;
     }
@@ -390,8 +381,7 @@ uint8 CRadar::CalculateBlipAlpha(float distance)
 
 // 0x583480
 // NOTE: Unhooked by default for now. Causes `DrawRadarSection` to crash.
-void CRadar::TransformRadarPointToScreenSpace(CVector2D& out, const CVector2D& in)
-{
+void CRadar::TransformRadarPointToScreenSpace(CVector2D& out, const CVector2D& in) {
     if (FrontEndMenuManager.m_bDrawRadarOrMap) {
         out.x = FrontEndMenuManager.m_vMapOrigin.x + FrontEndMenuManager.m_fMapZoom * in.x;
         out.y = FrontEndMenuManager.m_vMapOrigin.y - FrontEndMenuManager.m_fMapZoom * in.y;
@@ -402,8 +392,7 @@ void CRadar::TransformRadarPointToScreenSpace(CVector2D& out, const CVector2D& i
 }
 
 // 0x583530
-void CRadar::TransformRealWorldPointToRadarSpace(CVector2D& out, const CVector2D& in)
-{
+void CRadar::TransformRealWorldPointToRadarSpace(CVector2D& out, const CVector2D& in) {
     float rangeRecip = 1.0f / m_radarRange;
 
     float xOffset = rangeRecip * (in.x - vec2DRadarOrigin.x);
@@ -415,8 +404,7 @@ void CRadar::TransformRealWorldPointToRadarSpace(CVector2D& out, const CVector2D
 
 // unused
 // 0x5835A0
-void CRadar::TransformRadarPointToRealWorldSpace(CVector2D& out, const CVector2D& in)
-{
+void CRadar::TransformRadarPointToRealWorldSpace(CVector2D& out, const CVector2D& in) {
     out.x = cachedCos * in.x - cachedSin * in.y;
     out.y = cachedCos * in.y + cachedSin * in.x;
 
@@ -426,8 +414,7 @@ void CRadar::TransformRadarPointToRealWorldSpace(CVector2D& out, const CVector2D
 
 // unused, see CRadar::DrawRadarSection
 // 0x583600
-void CRadar::TransformRealWorldToTexCoordSpace(CVector2D& out, const CVector2D& in, int32 x, int32 y)
-{
+void CRadar::TransformRealWorldToTexCoordSpace(CVector2D& out, const CVector2D& in, int32 x, int32 y) {
     out.x = +(in.x - (float(500 * x) - 3000.0f));
     out.y = -(in.y - ((500 * float(12 - y)) - 3000.0f));
 
@@ -436,8 +423,7 @@ void CRadar::TransformRealWorldToTexCoordSpace(CVector2D& out, const CVector2D& 
 }
 
 // 0x583670
-void CRadar::CalculateCachedSinCos()
-{
+void CRadar::CalculateCachedSinCos() {
     if (FrontEndMenuManager.m_bDrawRadarOrMap) {
         cachedSin = 0.0f;
         cachedCos = 1.0f;
@@ -487,8 +473,7 @@ void CRadar::CalculateCachedSinCos()
 }
 
 // 0x583820
-int32 CRadar::SetCoordBlip(eBlipType type, CVector posn, eBlipColour color, eBlipDisplay blipDisplay, const char* scriptName)
-{
+int32 CRadar::SetCoordBlip(eBlipType type, CVector posn, eBlipColour color, eBlipDisplay blipDisplay, const char* scriptName) {
     auto index = FindTraceNotTrackingBlipIndex();
     if (index == -1)
         return -1;
@@ -511,8 +496,7 @@ int32 CRadar::SetCoordBlip(eBlipType type, CVector posn, eBlipColour color, eBli
 }
 
 // 0x583920
-int32 CRadar::SetShortRangeCoordBlip(eBlipType type, CVector posn, eBlipColour color, eBlipDisplay blipDisplay, char* scriptName)
-{
+int32 CRadar::SetShortRangeCoordBlip(eBlipType type, CVector posn, eBlipColour color, eBlipDisplay blipDisplay, const char* scriptName) {
     int32 index = SetCoordBlip(type, posn, color, blipDisplay, scriptName);
     if (index == -1)
         return -1;
@@ -523,8 +507,7 @@ int32 CRadar::SetShortRangeCoordBlip(eBlipType type, CVector posn, eBlipColour c
 }
 
 // 0x5839A0
-int32 CRadar::SetEntityBlip(eBlipType type, int32 entityHandle, uint32 arg2, eBlipDisplay blipDisplay)
-{
+int32 CRadar::SetEntityBlip(eBlipType type, int32 entityHandle, uint32 arg2, eBlipDisplay blipDisplay) {
     auto index = FindTraceNotTrackingBlipIndex();
     if (index == -1)
         return -1;
@@ -791,8 +774,7 @@ void CRadar::ShowRadarTrace(float x, float y, uint32 size, uint8 red, uint8 gree
 }
 
 // 0x584070
-void CRadar::ShowRadarTraceWithHeight(float x, float y, uint32 size, uint8 red, uint8 green, uint8 blue, uint8 alpha, eRadarTraceHeight height)
-{
+void CRadar::ShowRadarTraceWithHeight(float x, float y, uint32 size, uint8 red, uint8 green, uint8 blue, uint8 alpha, eRadarTraceHeight height) {
     Limit(x, y);
     RwRenderStateSet(rwRENDERSTATETEXTURERASTER, RWRSTATE(NULL));
 
@@ -855,8 +837,7 @@ void CRadar::ShowRadarTraceWithHeight(float x, float y, uint32 size, uint8 red, 
 
 // show debug line at this position
 // 0x584480
-void CRadar::ShowRadarMarker(CVector p, uint32 color, float radius)
-{
+void CRadar::ShowRadarMarker(CVector p, uint32 color, float radius) {
     auto& mat   = TheCamera.m_mCameraMatrix;
     auto& up    = mat.GetUp();
     auto& right = mat.GetRight();
@@ -871,8 +852,7 @@ void CRadar::ShowRadarMarker(CVector p, uint32 color, float radius)
 }
 
 // 0x584770
-uint32 CRadar::GetRadarTraceColour(eBlipColour color, bool bright, bool friendly)
-{
+uint32 CRadar::GetRadarTraceColour(eBlipColour color, bool bright, bool friendly) {
     switch (color) {
     case BLIP_COLOUR_RED:
     case BLIP_COLOUR_REDCOPY:
@@ -896,8 +876,7 @@ uint32 CRadar::GetRadarTraceColour(eBlipColour color, bool bright, bool friendly
 }
 
 // 0x584850
-void CRadar::DrawRotatingRadarSprite(CSprite2d* sprite, float x, float y, float angle, uint32 width, uint32 height, CRGBA color)
-{
+void CRadar::DrawRotatingRadarSprite(CSprite2d* sprite, float x, float y, float angle, uint32 width, uint32 height, CRGBA color) {
     Limit(x, y);
     CVector2D verts[4];
     for (auto i = 0u; i < std::size(verts); i++) {
@@ -911,8 +890,7 @@ void CRadar::DrawRotatingRadarSprite(CSprite2d* sprite, float x, float y, float 
 }
 
 // 0x584960
-void CRadar::DrawYouAreHereSprite(float x, float y)
-{
+void CRadar::DrawYouAreHereSprite(float x, float y) {
     static uint32& mapYouAreHereTimer = *(uint32*)0xBAA358; // TODO | STATICREF
     static bool& mapYouAreHereDisplay = *(bool*)0x8D0930;
 
@@ -944,8 +922,7 @@ void CRadar::DrawYouAreHereSprite(float x, float y)
 }
 
 // 0x584A80
-void CRadar::SetupRadarRect(int32 x, int32 y)
-{
+void CRadar::SetupRadarRect(int32 x, int32 y) {
     m_radarRect.left   = 500.0f * float(x - 6) - 500.0f;
     m_radarRect.top    = 500.0f * float(5 - y) - 500.0f;
     m_radarRect.right  = 500.0f * float(x - 4);
@@ -955,8 +932,7 @@ void CRadar::SetupRadarRect(int32 x, int32 y)
 // unused
 // 0x584B00
 // Returns true if either coords had to be clipped
-bool ClipRadarTileCoords(int32& x, int32& y)
-{
+bool ClipRadarTileCoords(int32& x, int32& y) {
     // Not quite the way they've done it, but nicer.
 
     const auto ox = x, oy = y;
@@ -968,8 +944,7 @@ bool ClipRadarTileCoords(int32& x, int32& y)
 }
 
 // 0x584B50
-void CRadar::RequestMapSection(int32 x, int32 y)
-{
+void CRadar::RequestMapSection(int32 x, int32 y) {
     if (x < 0 || x > MAX_RADAR_WIDTH_TILES - 1 || y < 0 || y > MAX_RADAR_HEIGHT_TILES - 1)
         return;
 
@@ -981,8 +956,7 @@ void CRadar::RequestMapSection(int32 x, int32 y)
 }
 
 // 0x584BB0
-void CRadar::RemoveMapSection(int32 x, int32 y)
-{
+void CRadar::RemoveMapSection(int32 x, int32 y) {
     if (x < 0 || x > MAX_RADAR_WIDTH_TILES || y < 0 || y > MAX_RADAR_HEIGHT_TILES)
         return;
 
@@ -994,8 +968,7 @@ void CRadar::RemoveMapSection(int32 x, int32 y)
 }
 
 // 0x584BF0
-void CRadar::RemoveRadarSections()
-{
+void CRadar::RemoveRadarSections() {
     for (auto y = 0u; y < MAX_RADAR_HEIGHT_TILES; y++) {
         for (auto x = 0u; x < MAX_RADAR_WIDTH_TILES; x++) {
             CStreaming::RemoveTxdModel(gRadarTextures[y][x]);
@@ -1004,15 +977,13 @@ void CRadar::RemoveRadarSections()
 }
 
 // 0x584D40
-bool IsPointInsideRadar(const CVector2D& point)
-{
+bool IsPointInsideRadar(const CVector2D& point) {
     return std::abs(point.x) < 1.0f
         && std::abs(point.y) < 1.0f;
 }
 
 // 0x584D90
-void GetTextureCorners(int32 x, int32 y, CVector2D* corners)
-{
+void GetTextureCorners(int32 x, int32 y, CVector2D* corners) {
     // Magic numbers probably come from `MAX_RADAR_WIDTH_TILES` and `MAX_RADAR_HEIGHT_TILES`
 
     corners[0].x = 500.0f * float(x - 6);
@@ -1030,20 +1001,17 @@ void GetTextureCorners(int32 x, int32 y, CVector2D* corners)
 
 // Returns number of intersections
 // 0x584E00
-int32 LineRadarBoxCollision(CVector2D& result, const CVector2D& lineStart, const CVector2D& lineEnd)
-{
+int32 LineRadarBoxCollision(CVector2D& result, const CVector2D& lineStart, const CVector2D& lineEnd) {
     return ((int32(__cdecl*)(CVector2D&, const CVector2D&, const CVector2D&))0x584E00)(result, lineStart, lineEnd);
 }
 
 // 0x585040
-int32 CRadar::ClipRadarPoly(CVector2D* out, const CVector2D* in)
-{
+int32 CRadar::ClipRadarPoly(CVector2D* out, const CVector2D* in) {
     return ((int32(__cdecl*)(CVector2D*, const CVector2D*))0x585040)(out, in);
 }
 
 // 0x5853D0
-void CRadar::DrawAreaOnRadar(const CRect& rect, const CRGBA&  color, bool inMenu)
-{
+void CRadar::DrawAreaOnRadar(const CRect& rect, const CRGBA&  color, bool inMenu) {
     /*
     if (!m_radarRect.IsRectInside(rect)) {
         return;
@@ -1082,8 +1050,7 @@ void CRadar::DrawAreaOnRadar(const CRect& rect, const CRGBA&  color, bool inMenu
 }
 
 // 0x585700
-void CRadar::DrawRadarMask()
-{
+void CRadar::DrawRadarMask() {
     RwRenderStateSet(rwRENDERSTATETEXTURERASTER,     RWRSTATE(NULL));
     RwRenderStateSet(rwRENDERSTATESRCBLEND,          RWRSTATE(rwBLENDSRCALPHA));
     RwRenderStateSet(rwRENDERSTATEDESTBLEND,         RWRSTATE(rwBLENDINVSRCALPHA));
@@ -1126,8 +1093,7 @@ void CRadar::DrawRadarMask()
 }
 
 // 0x5858D0
-void CRadar::StreamRadarSections(const CVector& worldPosn)
-{
+void CRadar::StreamRadarSections(const CVector& worldPosn) {
     if (!CStreaming::ms_disableStreaming) {
         StreamRadarSections(
             (int32)std::floor((worldPosn.x + 3000.0f) / 500.0f),       // todo: World constant
@@ -1137,14 +1103,12 @@ void CRadar::StreamRadarSections(const CVector& worldPosn)
 }
 
 // 0x584C50
-void CRadar::StreamRadarSections(int32 x, int32 y)
-{
+void CRadar::StreamRadarSections(int32 x, int32 y) {
     ((void(__cdecl*)(int32, int32))0x584C50)(x, y);
 }
 
 // 0x585960
-void CRadar::InitFrontEndMap()
-{
+void CRadar::InitFrontEndMap() {
     CalculateCachedSinCos();
     MapLegendList.fill(0);
 
@@ -1156,14 +1120,12 @@ void CRadar::InitFrontEndMap()
 }
 
 // 0x5859F0
-void CRadar::AddBlipToLegendList(uint8 arg0, int32 blipIndex)
-{
+void CRadar::AddBlipToLegendList(uint8 arg0, int32 blipIndex) {
     ((void(__cdecl*)(uint8, int32))0x5859F0)(arg0, blipIndex);
 }
 
 // 0x585B20
-void CRadar::SetMapCentreToPlayerCoords()
-{
+void CRadar::SetMapCentreToPlayerCoords() {
     if (FindPlayerPed() == nullptr)
         return;
 
@@ -1187,15 +1149,13 @@ void CRadar::SetMapCentreToPlayerCoords()
 }
 
 // 0x585BF0
-void CRadar::Draw3dMarkers()
-{
+void CRadar::Draw3dMarkers() {
     ((void(__cdecl*)())0x585BF0)();
 }
 
 // unused
 // 0x585FE0
-void CRadar::SetRadarMarkerState(int32 counter, bool flag)
-{
+void CRadar::SetRadarMarkerState(int32 counter, bool flag) {
     // NOP
 
     /* III/VC leftover
@@ -1219,8 +1179,7 @@ void CRadar::SetRadarMarkerState(int32 counter, bool flag)
 }
 
 // 0x585FF0
-void CRadar::DrawRadarSprite(eRadarSprite spriteId, float x, float y, uint8 alpha)
-{
+void CRadar::DrawRadarSprite(eRadarSprite spriteId, float x, float y, uint8 alpha) {
     Limit(x, y);
 
     const float width  = std::floor(SCREEN_WIDTH_UNIT * 8.f);  // uint32 width  = 8 * SCREEN_WIDTH_UNIT;  original math with warnings, NOTSA
@@ -1251,8 +1210,7 @@ void CRadar::DrawRadarGangOverlay(bool inMenu) {
 }
 
 // 0x586880
-void CRadar::DrawRadarMap()
-{
+void CRadar::DrawRadarMap() {
     DrawRadarMask();
 
     auto x = (int32)std::floor((vec2DRadarOrigin.x + 3000.0f) / 500.0f);  // todo: inlined
@@ -1318,8 +1276,7 @@ void CRadar::DrawRadarMap()
 
 // 0x586B00
 // TODO: Fix me - Zoom incorrect
-void CRadar::DrawMap()
-{
+void CRadar::DrawMap() {
     CPlayerPed* player = FindPlayerPed();
     bool mapShouldDrawn = !CGame::currArea && player->m_nAreaCode == 0 && FrontEndMenuManager.m_nRadarMode != 1;
 
@@ -1384,8 +1341,7 @@ void CRadar::DrawMap()
 
 // bad bad bad
 // 0x586D60
-void CRadar::DrawCoordBlip(int32 blipIndex, bool isSprite)
-{
+void CRadar::DrawCoordBlip(int32 blipIndex, bool isSprite) {
     const auto& trace = ms_RadarTrace[blipIndex];
 
     if (trace.m_nBlipType != BLIP_COORD && CTheScripts::IsPlayerOnAMission()) {
@@ -1443,8 +1399,7 @@ void CRadar::DrawCoordBlip(int32 blipIndex, bool isSprite)
 }
 
 // 0x587000
-void CRadar::DrawEntityBlip(int32 blipIndex, uint8 arg1)
-{
+void CRadar::DrawEntityBlip(int32 blipIndex, uint8 arg1) {
     ((void(__cdecl*)(int32, uint8))0x587000)(blipIndex, arg1);
 }
 
