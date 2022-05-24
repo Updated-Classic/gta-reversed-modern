@@ -31,7 +31,7 @@ void CAEVehicleAudioEntity::InjectHooks() {
 
     RH_ScopedInstall(Constructor, 0x4F63E0);
     RH_ScopedInstall(Destructor, 0x6D0A10);
-    RH_ScopedVirtualInstall(UpdateParameters, 0x4FB6C0);
+    RH_ScopedInstall(UpdateParameters_Reversed, 0x4FB6C0);
     RH_ScopedInstall(Initialise, 0x4F7670);
     RH_ScopedInstall(StaticInitialise, 0x5B99F0);
     RH_ScopedInstall(Terminate, 0x4FB8C0);
