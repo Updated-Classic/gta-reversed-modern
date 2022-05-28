@@ -215,6 +215,9 @@ void ProcessRenderTool() {
     if (ImGui::CollapsingHeader("Collision")) {
         CollisionDebugModule::ProcessImgui();
     }
+    if (ImGui::CollapsingHeader("Text")) {
+        TextDebugModule::ProcessImgui();
+    }
 }
 
 #ifdef EXTRA_DEBUG_FEATURES
