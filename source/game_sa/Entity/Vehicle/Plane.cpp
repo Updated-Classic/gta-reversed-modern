@@ -3,6 +3,7 @@
 #include "Plane.h"
 #include "CarCtrl.h"
 #include "FireManager.h"
+#include "FxPrtMult.h"
 
 int32& CPlane::GenPlane_ModelIndex = *(int32*)0xC1CAD8;
 uint32& CPlane::GenPlane_Status = *(uint32*)0xC1CADC;
@@ -404,7 +405,7 @@ void CPlane::Render() {
 
 // 0x6C9260
 void CPlane::ProcessControl() {
-    return plugin::CallMethod<0x6C9260, CPlane*>(this);
+    // return plugin::CallMethod<0x6C9260, CPlane*>(this);
 
     // untested
     if (m_nStatus == STATUS_PLAYER) {
@@ -449,8 +450,8 @@ void CPlane::ProcessControl() {
         m_pSmokeParticle->GetCompositeMatrix(&out);
         CVector velocity = -m_vecMoveSpeed * 5.0f;
         auto particleData = FxPrtMult_c(0.0f, 0.0f, 0.0f, 0.2f, 1.0f, 1.0f, 0.1f);
-        g_fx.m_pPrtSmoke_huge->AddParticle(&out.pos, &velocity, 0.00f, &particleData, -1.0f, 1.2f, 0.6f, 0);
-        g_fx.m_pPrtSmoke_huge->AddParticle(&out.pos, &velocity, 0.05f, &particleData, -1.0f, 1.2f, 0.6f, 0);
+        g_fx.m_SmokeHuge->AddParticle((CVector*)&out.pos, &velocity, 0.00f, &particleData, -1.0f, 1.2f, 0.6f, false);
+        g_fx.m_SmokeHuge->AddParticle((CVector*)&out.pos, &velocity, 0.05f, &particleData, -1.0f, 1.2f, 0.6f, false);
         if (m_nSmokeTimer <= 0 || vehicleFlags.bIsDrowning) {
             m_pSmokeParticle->Kill();
             m_pSmokeParticle = nullptr;

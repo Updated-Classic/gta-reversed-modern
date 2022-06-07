@@ -483,7 +483,7 @@ void CMenuManager::SetDefaultPreferences(eMenuScreen screen) {
         break;
     case SCREEN_DISPLAY_SETTINGS:
     case SCREEN_DISPLAY_ADVANCED:
-        g_fx.SetFxQuality(FXQUALITY_HIGH);
+        g_fx.SetFxQuality(FX_QUALITY_HIGH);
         gamma.SetGamma(0.5f, true);
         m_PrefsBrightness                = 256;
         m_fDrawDistance                  = 1.2f;

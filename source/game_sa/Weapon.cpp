@@ -13,6 +13,7 @@
 #include "BulletInfo.h"
 #include "InterestingEvents.h"
 #include "Shadows.h"
+#include "FxPrtMult.h"
 
 float& CWeapon::ms_fExtinguisherAimAngle = *(float*)0x8D610C;
 bool& CWeapon::bPhotographHasBeenTaken = *(bool*)0xC8A7C0;
@@ -158,7 +159,7 @@ void CWeapon::AddGunshell(CEntity* creator, CVector& position, const CVector2D& 
         fxprt.SetColor(0.6f, 0.1f, 0.1f);
     }
 
-    g_fx.m_pPrtGunshell->AddParticle(&position, &velocity, 0.0f, &fxprt, -1.0f, 1.2f, 0.6f, 0);
+    g_fx.m_GunShell->AddParticle(&position, &velocity, 0.0f, &fxprt, -1.0f, 1.2f, 0.6f, 0);
 }
 
 // 0x73A530
