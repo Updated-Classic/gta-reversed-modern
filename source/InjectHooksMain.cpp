@@ -39,7 +39,6 @@
 #include "Lines.h"
 #include "Escalators.h"
 #include "MovingThings.h"
-#include "MovingThings.h"
 #include "PlaneTrail.h"
 #include "PlaneTrails.h"
 #include "Gamma.h"
@@ -111,6 +110,10 @@
 #include "Shadows.h"
 #include "ShadowCamera.h"
 #include "VehicleRecording.h"
+#include "GrassRenderer.h"
+#include "PPTriPlantBuffer.h"
+#include "ProcObjectMan.h"
+#include "ProcSurfaceInfo.h"
 
 // Tasks
 #include "TaskSimpleAbseil.h"
@@ -243,6 +246,10 @@ void InjectHooksMain() {
     CPad::InjectHooks();
     CFileMgr::InjectHooks();
 
+    ProcObjectMan_c::InjectHooks();
+    ProcSurfaceInfo_c::InjectHooks();
+    CGrassRenderer::InjectHooks();
+    CPPTriPlantBuffer::InjectHooks();
     CEscalator::InjectHooks();
     CShadowCamera::InjectHooks();
     CInterestingEvents::InjectHooks();
