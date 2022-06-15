@@ -692,6 +692,8 @@ public:
     bool HasDriver() const { return !!m_pDriver; }
     CVehicleAnimGroup& GetAnimGroup() const;
     AssocGroupId GetAnimGroupId() const;
+    auto GetPassengers() { return std::span(m_apPassengers, m_nMaxPassengers); }
+
 private:
     friend void InjectHooksMain();
     static void InjectHooks();

@@ -227,10 +227,16 @@
 #include "TaskSimpleIKPointArm.h"
 #include "TaskSimpleCarSlowDragPedOut.h"
 #include "TaskSimpleWaitUntilPedIsOutCar.h"
+#include "TaskSimpleDrown.h"
+#include "TaskComplexDieInCar.h"
+#include "TaskComplexFallToDeath.h"
+#include "TaskSimpleDrownInCar.h"
+#include "TaskSimpleDieInCar.h"
 
 #include "platform/win/VideoPlayer/VideoPlayer.h"
 #include "platform/win/win.h"
 #include "platform/platform.h"
+
 
 void InjectHooksMain() {
     ReversibleHooks::OnInjectionBegin();
@@ -627,7 +633,12 @@ void InjectHooksMain() {
         CTaskSimpleIKManager::InjectHooks();
         CTaskSimpleIKPointArm::InjectHooks();
         CTaskSimpleIKLookAt::InjectHooks();
-        // CTaskComplexDie::InjectHooks();
+        CTaskComplexDie::InjectHooks();
+        CTaskComplexDieInCar::InjectHooks();
+        CTaskComplexFallToDeath::InjectHooks();
+        CTaskSimpleDieInCar::InjectHooks();
+        CTaskSimpleDrown::InjectHooks();
+        CTaskSimpleDrownInCar::InjectHooks();
         // CTaskComplexEnterBoatAsDriver::InjectHooks();
         CTaskSimpleFight::InjectHooks();
         CTaskComplexUseWaterCannon::InjectHooks();
