@@ -46,6 +46,7 @@ public:
     void Resize(float resizeX, float resizeY);
     [[nodiscard]] bool IsPointInside(const CVector2D& point) const;
     [[nodiscard]] bool IsPointInside(const CVector2D& point, float tolerance) const;
+    [[nodiscard]] bool IsRectInside(const CRect& rect) const; // NOTSA (or maybe it is?)
     void SetFromCenter(float x, float y, float size);
     void GetCenter(float* x, float* y) const;
     [[nodiscard]] inline CVector2D GetCenter() const { return { (right + left) * 0.5F, (top + bottom) * 0.5F }; }

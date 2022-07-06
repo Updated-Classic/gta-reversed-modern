@@ -116,8 +116,8 @@ OpcodeResult CRunningScript::ProcessCommands1200To1299(int32 commandId) {
         int32 index = CollectNextParameterWithoutIncreasingPC(); // pointless
         CRadar::GetActualBlipArrayIndex(index);                  // pointless
 
-        int32 blip = CRadar::SetShortRangeCoordBlip(BLIP_COORD, pos, 5, BLIP_DISPLAY_BOTH, m_szName);
-        CRadar::SetBlipSprite(blip, ScriptParams[3].iParam);
+        int32 blip = CRadar::SetShortRangeCoordBlip(BLIP_COORD, pos, BLIP_COLOUR_REDCOPY, BLIP_DISPLAY_BOTH, m_szName);
+        CRadar::SetBlipSprite(blip, static_cast<eRadarSprite>(ScriptParams[3].iParam));
         ScriptParams[0].iParam = blip;
         StoreParameters(1);
         return OR_CONTINUE;
