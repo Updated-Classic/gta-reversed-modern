@@ -32,8 +32,8 @@ void CGenericGameStorage::InjectHooks() {
     RH_ScopedInstall(GenericLoad, 0x5D17B0, true);
     RH_ScopedInstall(GenericSave, 0x5D13E0, true);
     RH_ScopedInstall(CheckSlotDataValid, 0x5D1380, true);
-    RH_ScopedInstall(LoadDataFromWorkBuffer, 0x5D1300, true);
-    RH_ScopedInstall(SaveDataToWorkBuffer, 0x5D1270, true);
+    RH_ScopedOverloadedInstall(LoadDataFromWorkBuffer, "", 0x5D1300, bool(*)(void*, int32), true);
+    RH_ScopedOverloadedInstall(SaveDataToWorkBuffer, "", 0x5D1270, int32(*)(void*, int32), true);
     RH_ScopedInstall(LoadWorkBuffer, 0x5D10B0, true);
     RH_ScopedInstall(SaveWorkBuffer, 0x5D0F80, true);
     RH_ScopedInstall(GetCurrentVersionNumber, 0x5D0F50, true);
